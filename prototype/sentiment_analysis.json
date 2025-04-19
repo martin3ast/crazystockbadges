@@ -1,0 +1,220 @@
+{
+  "overall_sentiment": {
+    "valence": 0.6474909090909091,
+    "arousal": 0.45792727272727257,
+    "dominance": 0.5867636363636364,
+    "confidence": 1.0,
+    "financial_sentiment": 0.0,
+    "coverage": 0.5188679245283019,
+    "total_words": 106,
+    "matched_words": 55,
+    "hedging_words": 0,
+    "financial_positive": 1,
+    "financial_negative": 1
+  },
+  "emotional_summary": {
+    "emotional_tone": "neutral and moderate",
+    "power_dynamic": "neutral",
+    "certainty": "very confident",
+    "market_outlook": "neutral",
+    "primary_emotion": "neutral"
+  },
+  "key_terms": {
+    "positive_terms": [
+      "optimism",
+      "hearts",
+      "good",
+      "journey",
+      "future",
+      "ability",
+      "value",
+      "stability",
+      "apple",
+      "ride"
+    ],
+    "negative_terms": [
+      "amidst",
+      "price",
+      "slightly",
+      "delve",
+      "chart",
+      "evening",
+      "fuel",
+      "back",
+      "period",
+      "uncertain"
+    ],
+    "high_arousal_terms": [
+      "rollercoaster",
+      "giant",
+      "strategic",
+      "journey",
+      "future",
+      "exhibit",
+      "potential",
+      "hearts",
+      "value",
+      "change"
+    ],
+    "high_dominance_terms": [
+      "giant",
+      "strategic",
+      "worldwide",
+      "stability",
+      "potential",
+      "ability",
+      "optimism",
+      "value",
+      "future",
+      "trajectory"
+    ]
+  },
+  "one_word_summary": "NEUTRAL",
+  "sentence_analysis": [
+    {
+      "sentence": "Good evening, viewers.",
+      "sentiment": {
+        "valence": 0.698,
+        "arousal": 0.27649999999999997,
+        "dominance": 0.42600000000000005,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6666666666666666,
+        "total_words": 3,
+        "matched_words": 2,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Let's delve into the world of Apple Inc. \u2013 a tech giant that has captured the hearts of investors worldwide.",
+      "sentiment": {
+        "valence": 0.71,
+        "arousal": 0.5117142857142858,
+        "dominance": 0.6968571428571428,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6363636363636364,
+        "total_words": 11,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Today's closing price for AAPL stands at $190.42, showcasing its resilience amidst market fluctuations.",
+      "sentiment": {
+        "valence": 0.5535,
+        "arousal": 0.43125,
+        "dominance": 0.50975,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.4,
+        "total_words": 10,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Looking back, AAPL's 52-week journey reveals a rollercoaster ride, with highs reaching $259.81 and lows dipping to $163.31.",
+      "sentiment": {
+        "valence": 0.6932,
+        "arousal": 0.5322,
+        "dominance": 0.487,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.4166666666666667,
+        "total_words": 12,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Despite challenges, AAPL has managed to exhibit a commendable 9.30% change over this period, reflecting its ability to adapt to evolving market conditions.",
+      "sentiment": {
+        "valence": 0.6638888888888889,
+        "arousal": 0.4773333333333333,
+        "dominance": 0.601,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6428571428571429,
+        "total_words": 14,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Analyzing the current technical indicators, the MACD value stands at -10.44, signaling a bearish trend, while the RSI at 38.28 indicates a slightly oversold condition.",
+      "sentiment": {
+        "valence": 0.5894285714285713,
+        "arousal": 0.4477142857142857,
+        "dominance": 0.5648571428571428,
+        "confidence": 1.0,
+        "financial_sentiment": -0.06666666666666667,
+        "coverage": 0.4666666666666667,
+        "total_words": 15,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "These metrics suggest potential opportunities for strategic entry points for investors eyeing long-term positions.",
+      "sentiment": {
+        "valence": 0.67925,
+        "arousal": 0.53925,
+        "dominance": 0.705,
+        "confidence": 1.0,
+        "financial_sentiment": 0.09090909090909091,
+        "coverage": 0.36363636363636365,
+        "total_words": 11,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "As we navigate uncertain market waters, AAPL's past successes, current stability, and future innovations continue to fuel optimism among traders and enthusiasts alike.",
+      "sentiment": {
+        "valence": 0.6653636363636365,
+        "arousal": 0.44272727272727264,
+        "dominance": 0.5847272727272728,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6111111111111112,
+        "total_words": 18,
+        "matched_words": 11,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Stay tuned as we monitor AAPL's trajectory, anticipating how this tech juggernaut will chart its course in the days to come.",
+      "sentiment": {
+        "valence": 0.5715,
+        "arousal": 0.36799999999999994,
+        "dominance": 0.5755,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5,
+        "total_words": 12,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    }
+  ],
+  "success": true
+}

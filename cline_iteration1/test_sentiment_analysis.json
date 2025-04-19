@@ -1,0 +1,332 @@
+{
+  "overall_sentiment": {
+    "valence": 0.694736842105263,
+    "arousal": 0.44904210526315796,
+    "dominance": 0.6132315789473685,
+    "confidence": 1.0,
+    "financial_sentiment": 0.03546099290780142,
+    "coverage": 0.6737588652482269,
+    "total_words": 141,
+    "matched_words": 95,
+    "hedging_words": 0,
+    "financial_positive": 7,
+    "financial_negative": 2
+  },
+  "emotional_summary": {
+    "emotional_tone": "positive and moderate",
+    "power_dynamic": "neutral",
+    "certainty": "very confident",
+    "market_outlook": "neutral",
+    "primary_emotion": "content"
+  },
+  "key_terms": {
+    "positive_terms": [
+      "success",
+      "thank",
+      "innovation",
+      "growth",
+      "new",
+      "strong",
+      "journey",
+      "company",
+      "valuable",
+      "welcome"
+    ],
+    "negative_terms": [
+      "eye",
+      "put",
+      "privacy",
+      "past",
+      "terms",
+      "monitor",
+      "segment",
+      "chain",
+      "retain",
+      "volatility"
+    ],
+    "high_arousal_terms": [
+      "success",
+      "impressive",
+      "volatility",
+      "strong",
+      "journey",
+      "innovation",
+      "attract",
+      "significant",
+      "future",
+      "potential"
+    ],
+    "high_dominance_terms": [
+      "success",
+      "experienced",
+      "strong",
+      "innovation",
+      "worth",
+      "impressive",
+      "represent",
+      "revenue",
+      "quality",
+      "potential"
+    ]
+  },
+  "one_word_summary": "CONTENT",
+  "sentence_analysis": [
+    {
+      "sentence": "\n    Welcome to the financial news segment, where we bring you the latest updates and insights on the world of business.",
+      "sentiment": {
+        "valence": 0.6588571428571427,
+        "arousal": 0.4782857142857143,
+        "dominance": 0.6290000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.7,
+        "total_words": 10,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Today, let's talk about one of the most talked about stocks in the market - Apple (AAPL).",
+      "sentiment": {
+        "valence": 0.7148333333333333,
+        "arousal": 0.38699999999999996,
+        "dominance": 0.4495,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6666666666666666,
+        "total_words": 9,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Apple has been making headlines since its inception, but it was the past year that truly put the company on the spotlight.",
+      "sentiment": {
+        "valence": 0.6515714285714286,
+        "arousal": 0.37242857142857144,
+        "dominance": 0.4825714285714286,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6363636363636364,
+        "total_words": 11,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Despite facing challenges such as supply chain issues and market volatility, Apple managed to maintain its position as one of the world's most valuable companies.",
+      "sentiment": {
+        "valence": 0.6234999999999999,
+        "arousal": 0.4648,
+        "dominance": 0.5391000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": -0.0625,
+        "coverage": 0.625,
+        "total_words": 16,
+        "matched_words": 10,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "What's impressive is Apple's vision for the future.",
+      "sentiment": {
+        "valence": 0.7923333333333332,
+        "arousal": 0.6403333333333333,
+        "dominance": 0.8003333333333332,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6,
+        "total_words": 5,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The company has been innovating with its cutting-edge products and has expanded into services, which now represent a significant portion of its revenue.",
+      "sentiment": {
+        "valence": 0.7805,
+        "arousal": 0.46449999999999997,
+        "dominance": 0.731,
+        "confidence": 1.0,
+        "financial_sentiment": 0.2,
+        "coverage": 0.6,
+        "total_words": 10,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 2,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Not to mention, Apple's ecosystem continues to attract and retain customers.",
+      "sentiment": {
+        "valence": 0.6134999999999999,
+        "arousal": 0.4345,
+        "dominance": 0.6485,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5714285714285714,
+        "total_words": 7,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "In terms of pricing, AAPL has had a steady journey.",
+      "sentiment": {
+        "valence": 0.6933333333333334,
+        "arousal": 0.4166666666666667,
+        "dominance": 0.6776666666666666,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6,
+        "total_words": 5,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "After hitting record highs, the stock experienced some volatility due to broader market conditions.",
+      "sentiment": {
+        "valence": 0.5764285714285714,
+        "arousal": 0.4954285714285714,
+        "dominance": 0.5650000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": -0.1,
+        "coverage": 0.7,
+        "total_words": 10,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "However, with strong financial performance and a loyal customer base, Apple's stock has remained resilient.",
+      "sentiment": {
+        "valence": 0.69475,
+        "arousal": 0.4645,
+        "dominance": 0.6725000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.09090909090909091,
+        "coverage": 0.7272727272727273,
+        "total_words": 11,
+        "matched_words": 8,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Looking ahead, Apple is poised for continued growth.",
+      "sentiment": {
+        "valence": 0.7677499999999999,
+        "arousal": 0.46199999999999997,
+        "dominance": 0.55325,
+        "confidence": 1.0,
+        "financial_sentiment": 0.16666666666666666,
+        "coverage": 0.6666666666666666,
+        "total_words": 6,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The company is expanding its product lineup and services, with potential new markets on the horizon.",
+      "sentiment": {
+        "valence": 0.7731666666666667,
+        "arousal": 0.4446666666666666,
+        "dominance": 0.6826666666666666,
+        "confidence": 1.0,
+        "financial_sentiment": 0.1111111111111111,
+        "coverage": 0.6666666666666666,
+        "total_words": 9,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Plus, with its focus on privacy and sustainability, Apple is well-positioned for the evolving tech landscape.",
+      "sentiment": {
+        "valence": 0.6848,
+        "arousal": 0.3538,
+        "dominance": 0.533,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5555555555555556,
+        "total_words": 9,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "In conclusion, Apple's past, present, and future are all intertwined with innovation, quality, and success.",
+      "sentiment": {
+        "valence": 0.7887142857142857,
+        "arousal": 0.5331428571428571,
+        "dominance": 0.7304285714285715,
+        "confidence": 1.0,
+        "financial_sentiment": 0.2222222222222222,
+        "coverage": 0.7777777777777778,
+        "total_words": 9,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 2,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "And as we continue to monitor this stock's performance, it's clear that AAPL is a company worth keeping an eye on.",
+      "sentiment": {
+        "valence": 0.689,
+        "arousal": 0.40555555555555556,
+        "dominance": 0.6462222222222223,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.9,
+        "total_words": 10,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "This concludes our report, thank you for tuning in.",
+      "sentiment": {
+        "valence": 0.7533333333333333,
+        "arousal": 0.3956666666666666,
+        "dominance": 0.5786666666666667,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.75,
+        "total_words": 4,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    }
+  ],
+  "success": true
+}
