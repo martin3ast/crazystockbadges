@@ -1,5 +1,4 @@
-# Attribution: Deepseek 17th April, from prompt 'what are good optimization features for a 3-d model, how do I measure 'craziness''
-
+# Prototype complexity analysis Notes and Code, Deepseek output 21st April approx. 
 
 from solid import *
 import re
