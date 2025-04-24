@@ -878,6 +878,8 @@ class DiscBadge(Badge3DModel):
                 terrain_model = self.generate_bar_chart()
             elif terrain_type == 'pyramid':
                 terrain_model = self.generate_pyramid()
+            elif terrain_type == 'surface_plot':
+                terrain_model = self.generate_surface_plot()
             else:
                 logger.warning(f"Unknown terrain type: {terrain_type}, using spiral_chart")
                 terrain_model = self.generate_spiral_chart()
@@ -1170,6 +1172,8 @@ class TriangularBadge(Badge3DModel):
                 terrain_model = self._generate_terrain()
             elif terrain_type == 'bar_chart':
                 terrain_model = self.generate_bar_chart()
+            elif terrain_type == 'surface_plot':
+                terrain_model = self.generate_surface_plot()
             else:
                 logger.warning(f"Unknown terrain type: {terrain_type}, using pyramid")
                 terrain_model = self.generate_pyramid()
@@ -1273,9 +1277,6 @@ class TriangularBadge(Badge3DModel):
         
         return union()(cells)
     
-
-
-
 class BadgeFactory:
     """
     Factory class for creating different types of badges.

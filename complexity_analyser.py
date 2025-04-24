@@ -2,16 +2,12 @@
 Complexity estimation functions
 
 A set of functions (experiments) to estimate the model complexity, this is for the fitness function for our 
-Genetc algorithm. Deepseek and Cline were used to find the correct datastructures under instruction
-from Martin East. The functions are designed to be used with OpenSCAD code and analyze the complexity
-of the generated models. The functions count CSG operations, analyze the node structure, and suggest
-optimizations based on the complexity metrics. The goal is to provide a comprehensive analysis of the
-3D model's complexity, focusing on polygonal structures and the overall craziness factor of the generated models.
+Genetic algorithm. The class takes in a Solid Python model , that is traversed node by node, counting metrics
 
 Version 1.0: Cline implementation for Martin East - Adapted from complexity_estimation.py - Apr 17, 2025
-Version 2.0: Martin East - Moved to separate file for better organization - Apr 17, 2025
-Version 3.0: Cline for Martin East - reworked from prototype - Apr 23, 2025
-
+Version 2.0: Martin East - Moved to separate file for better organization, read and analysed - Apr 17, 2025
+Version 3.0: Cline for Martin East - reworked from prototype, under instructiom to keep it simple - Apr 23, 2025
+Version 3.1:  Martin East - minor renames and tidy, weighting factors reviews and documented - Apr 23, 2025
 
 '''
 
@@ -20,7 +16,7 @@ from collections import defaultdict
 from solid import cube, sphere, cylinder, polyhedron, polygon
 from solid import union, difference, intersection, hull, minkowski
 
-class ModelComplexityAnalyzer:
+class ComplexityAnalyzer:
     """
     Analyzes the complexity of a SolidPython node structure.
     Consolidates all complexity analysis into a single class.
@@ -54,7 +50,7 @@ class ModelComplexityAnalyzer:
         
         # Perform analysis
         self._analyze_structure()
-        self.metrics['complexity_score'] = self._calculate_complexity_score()
+        self.metrics['complexity_score'] = self._model_complexity_score(self.node)
     
     def _analyze_structure(self):
         """Analyze the node structure and collect metrics"""
@@ -62,7 +58,7 @@ class ModelComplexityAnalyzer:
     
     def _traverse_node(self, node, depth=0):
         """
-        Unified node traversal that collects various metrics
+        Unified node traversal that collects metrics
         """
         self.metrics['total_nodes'] += 1
         self.metrics['max_depth'] = max(self.metrics['max_depth'], depth)
@@ -97,10 +93,6 @@ class ModelComplexityAnalyzer:
                 faces = len(getattr(node, 'faces', []))
                 self.metrics['polygonal_metrics']['total_points'] += points
                 self.metrics['polygonal_metrics']['total_faces'] += faces
-    
-    def _calculate_complexity_score(self):
-        """Calculate the overall complexity score"""
-        return self._model_complexity_score(self.node)
     
     def _model_complexity_score(self, node):
         """
@@ -174,9 +166,17 @@ class ModelComplexityAnalyzer:
     
     def calculate_polygonal_complexity_score(self):
         """
+        
         Calculate a single polygonal complexity score based on collected metrics
         
+        Weighting rationale:
+        - total_points (0.5): Base contribution of points
+        - max_points_per_polygon (2.0): Rewards complex individual polygons
+        - polyhedron_count (10.0): Heavily rewards polyhedrons as most complex primitives
+        - total_faces (1.5): Rewards models with more faces for visual complexity
+        
         Returns: float representing polygonal complexity
+        
         """
         metrics = self.metrics['polygonal_metrics']
         if metrics['polygon_count'] > 0 or metrics['polyhedron_count'] > 0:
@@ -198,31 +198,3 @@ class ModelComplexityAnalyzer:
         # Calculate polygonal complexity score before returning
         self.metrics['polygonal_metrics']['polygonal_complexity_score'] = self.calculate_polygonal_complexity_score()
         return self.metrics
-
-
-def count_csg_operations(scad_code):
-    """
-    Counts all CSG operations in generated OpenSCAD code, Openscad files are text and readable, describing
-    the model in coordinates and primitives.
-    
-    Version 1.0: Cline implementation for Martin East - Adapted from complexity_estimation.py - Apr 17, 2025
-    Version 2.0: Read and commented by Martin East - Apr 17, 2025
-    Version 3.0: Maintained for backward compatibility - Apr 23, 2025
-    
-    Returns: dict with counts for each operation type
-    """
-    patterns = {
-        'unions': r'union\(\)\s*\{',
-        'differences': r'difference\(\)\s*\{',
-        'intersections': r'intersection\(\)\s*\{',
-        'hulls': r'hull\(\)\s*\{',
-        'minkowskis': r'minkowski\(\)\s*\{',
-        'transforms': r'(translate|rotate|scale|mirror|multmatrix|color)\s*\(',
-        'primitives': r'(cube|sphere|cylinder|polyhedron|square|circle|polygon|text)\s*\('
-    }
-    
-    counts = {}
-    for name, pattern in patterns.items():
-        counts[name] = len(re.findall(pattern, scad_code))
-    
-    return counts
