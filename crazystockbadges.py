@@ -32,18 +32,8 @@ from solid import scad_render
 import pygad
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARN,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("crazystockbadges.log"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger('crazystockbadges')
-
-init(autoreset=True)  # Initialize colorama for Text color on terminal output.
+# Initialize colorama for Text color on terminal output.
+init(autoreset=True)
 
 class CrazyStockBadge:
     """
@@ -71,9 +61,23 @@ class CrazyStockBadge:
                            help='Skip generating and displaying the stock report')
         self.parser.add_argument('--ga-generations', type=int, default=100,
                            help='Number of generations for the genetic algorithm (default: 100)')
+        self.parser.add_argument('--verbose', action='store_true',
+                           help='Enable verbose (INFO) logging')
         
         # Parse the arguments
         self.args = self.parser.parse_args()
+        
+        # Configure logging
+        log_level = logging.INFO if self.args.verbose else logging.WARN
+        logging.basicConfig(
+            level=log_level,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler("crazystockbadges.log"),
+                logging.StreamHandler(sys.stdout)
+            ]
+        )
+        self.logger = logging.getLogger('crazystockbadges')
 
         # Set default values or from command line arguments.
         self.ticker = self.args.ticker if hasattr(self, 'args') else 'APPL'
@@ -139,7 +143,13 @@ class CrazyStockBadge:
         print(f"{Fore.BLUE}... Badge generation complete!{Style.RESET_ALL}")
 
         # Get the badge complexity stats
-        self.complexity_report = self._get_complexity_report(self.badge)
+        # Ensure the badge has its final_model generated
+        if self.badge.final_model is None:
+            self.badge.combine_models()
+            
+        # Create analyzer and get complexity report
+        analyzer = ComplexityAnalyzer(self.badge.final_model)
+        self.complexity_report = analyzer.get_complexity_report()
         print(f"{Fore.BLUE}... Badge complexity analysis complete!{Style.RESET_ALL}")
 
         output_file = self.args.output if self.args.output else "disc.scad"
@@ -168,7 +178,7 @@ class CrazyStockBadge:
         Version 2.0: Cline refactor for Martin East - refactor this function after changes to badge_factory.py.
         Attribution: Cline implementation for Martin East - Complexity-focused badge generation - Apr 17, 2025
         """
-        logger.info("Generating 3D badge using genetic algorithm with complexity metrics")
+        self.logger.info("Generating 3D badge using genetic algorithm with complexity metrics")
         
         # Define gene space
         gene_space = self._create_gene_space()
@@ -176,27 +186,27 @@ class CrazyStockBadge:
         # Create pyGAD instance
         self.ga_instance = pygad.GA(
             num_generations=self.ga_generations,
-            num_parents_mating=4,
+            num_parents_mating=2,
             fitness_func=self.fitness_function,
-            sol_per_pop=20,
+            sol_per_pop=40,
             num_genes=len(gene_space),
             gene_space=gene_space,
             parent_selection_type="tournament",
             K_tournament=3,
             crossover_type="uniform",
             mutation_type="random",
-            mutation_percent_genes=15,
+            mutation_percent_genes=20,
             keep_elitism=2,
             on_generation=self._on_generation
         )
         
         # Run the genetic algorithm
-        logger.info(f"Running genetic algorithm for {self.ga_generations} generations")
+        self.logger.info(f"Running genetic algorithm for {self.ga_generations} generations")
         self.ga_instance.run()
         
         # Get the best solution
         solution, solution_fitness, solution_idx = self.ga_instance.best_solution()
-        logger.info(f"Best solution found with fitness: {solution_fitness:.2f}")
+        self.logger.info(f"Best solution found with fitness: {solution_fitness:.2f}")
         
         # Get the best badge and complexity report
         best_badge, complexity_report, _ = self.ga_instance.badges[solution_idx]
@@ -206,24 +216,31 @@ class CrazyStockBadge:
         self.complexity_report = complexity_report
         
         # Set text content to one-word summary if available
-        if hasattr(self, 'one_word_summary'):
-            logger.info(f"Setting badge text to sentiment summary: {self.one_word_summary}")
-            best_params['text_content'] = self.one_word_summary
-            
-            # Regenerate the badge with the new text
-            best_badge = BadgeFactory.create_badge(
-                best_params['badge_type'], 
-                self.mdm.data, 
-                self.ticker, 
-                best_params
-            )
-            best_badge.generate_base()
-            best_badge.generate_terrain()
-            best_badge.generate_text()
-            best_badge.combine_models()
+        #if hasattr(self, 'one_word_summary'):
+        #    self.logger.info(f"Setting badge text to sentiment summary: {self.one_word_summary}")
+        #    best_params['text_content'] = self.one_word_summary
+        #    
+        #    # Regenerate the badge with the new text
+        #    best_badge = BadgeFactory.create_badge(
+        #        best_params['badge_type'], 
+        #        self.mdm.data, 
+        #        self.ticker, 
+        #        best_params,
+        #        verbose=self.args.verbose
+        #    )
+            #best_badge.generate_base()
+            #best_badge.generate_terrain()
+            #best_badge.generate_text()
+            #best_badge.combine_models()
             
             # Update complexity report for the new badge
-            self.complexity_report = self._get_complexity_report(best_badge)
+            # Ensure the badge has its final_model generated
+            #if best_badge.final_model is None:
+            #    best_badge.combine_models()
+                
+        #    analyzer = ComplexityAnalyzer(best_badge.final_model)
+        #    analyzer.print_metrics()
+        #    self.complexity_report = analyzer.get_complexity_report()
         
         # Save the best badge
         output_file = self.args.output or "disc.scad"
@@ -235,22 +252,22 @@ class CrazyStockBadge:
         self.badge_output_file = output_file
         
         # Log badge details
-        logger.info(f"Badge generation complete. Output file: {output_file}")
-        logger.info(f"Badge type: {best_params['badge_type']}")
+        self.logger.info(f"Badge generation complete. Output file: {output_file}")
+        self.logger.info(f"Badge type: {best_params['badge_type']}")
         
         # Log terrain types
         if 'terrain_types' in best_params:
             terrain_types = best_params['terrain_types']
             terrain_weights = best_params['terrain_weights']
-            logger.info(f"Terrain types: {', '.join(terrain_types)}")
-            logger.info(f"Terrain weights: {', '.join([f'{w:.2f}' for w in terrain_weights])}")
+            self.logger.info(f"Terrain types: {', '.join(terrain_types)}")
+            self.logger.info(f"Terrain weights: {', '.join([f'{w:.2f}' for w in terrain_weights])}")
         else:
-            logger.info(f"Terrain type: {best_params.get('terrain_type', 'N/A')}")
+            self.logger.info(f"Terrain type: {best_params.get('terrain_type', 'N/A')}")
         
         # Log complexity metrics
-        logger.info(f"Complexity score: {self.complexity_report['complexity_score']:.2f}")
-        logger.info(f"Total nodes: {self.complexity_report['total_nodes']}")
-        logger.info(f"Max depth: {self.complexity_report['max_depth']}")
+        self.logger.info(f"Complexity score: {self.complexity_report['complexity_score']:.2f}")
+        self.logger.info(f"Total nodes: {self.complexity_report['total_nodes']}")
+        self.logger.info(f"Max depth: {self.complexity_report['max_depth']}")
 
     def get_text_content(self, text_type, sentiment):
         """
@@ -376,10 +393,23 @@ class CrazyStockBadge:
         Fitness function using complexity metrics.
         
         Version 3.0: Cline refactor for Martin East - Updated to work with ComplexityAnalyzer - Apr 23, 2025.
+        Version 3.1: Martin East - Fix issue with model generation - Apr 25, 2025.
         """
         params = self.genes_to_badge_params(solution)
-        badge = BadgeFactory.create_badge(params['badge_type'], self.mdm.data, self.ticker, params)
-        report = self._get_complexity_report(badge)
+
+        # Create the badge using the parameters
+        badge = BadgeFactory.create_badge(params['badge_type'], self.mdm.data, self.ticker, params, verbose=self.args.verbose)
+        
+        # Ensure the badge's model components are generated
+        badge.generate_base()
+        badge.generate_terrain()
+        badge.generate_text()
+        badge.combine_models()
+            
+        analyzer = ComplexityAnalyzer(badge.final_model)
+        analyzer.print_metrics()
+
+        report = analyzer.get_complexity_report()
         
         ga_instance.population_stats = getattr(ga_instance, 'population_stats', [])
         ga_instance.population_stats.append(report)
@@ -405,7 +435,10 @@ class CrazyStockBadge:
                     max_values[metric] = min_values[metric] + 1
             
             # Calculate fitness for all solutions
-            for i, report in enumerate(ga_instance.population_stats):
+            # Get the solution indices from the badges dictionary
+            solution_indices = list(ga_instance.badges.keys())
+            
+            for i, (solution_idx, report) in enumerate(zip(solution_indices, ga_instance.population_stats)):
                 normalized_metrics = {
                     metric: (report[metric] - min_values[metric]) / (max_values[metric] - min_values[metric])
                     for metric in metrics
@@ -419,8 +452,8 @@ class CrazyStockBadge:
                 
                 fitness = sum(normalized_metrics[m] * weights[m] for m in metrics)
                 
-                badge, _, _ = ga_instance.badges[i]
-                ga_instance.badges[i] = (badge, report, fitness)
+                badge, _, _ = ga_instance.badges[solution_idx]
+                ga_instance.badges[solution_idx] = (badge, report, fitness)
                 
                 # Store the fitness value directly in the solution's fitness
                 # We'll skip updating last_generation_fitness as it might not be initialized yet
@@ -429,19 +462,6 @@ class CrazyStockBadge:
             return ga_instance.badges[solution_idx][2]
         
         return 0
-
-
-    def _get_complexity_report(self, badge):
-        """
-        Analyze the complexity of a badge model.
-        
-        Version 2.0: Cline refactor for Martin East - Added to support the new ComplexityAnalyzer class.
-        """
-        if badge.final_model is None:
-            badge.combine_models()
-            
-        analyzer = ComplexityAnalyzer(badge.final_model)
-        return analyzer.get_complexity_report()
         
     def _on_generation(self, ga_instance):
         """
@@ -454,7 +474,7 @@ class CrazyStockBadge:
         """
         if ga_instance.generations_completed % 10 == 0:
             best_solution, best_fitness, _ = ga_instance.best_solution()
-            logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
+            self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
 
 
     def _create_gene_space(self):
@@ -466,12 +486,7 @@ class CrazyStockBadge:
         Returns:
             list: Gene space definition for pyGAD
         """
-        # Define terrain types:
-        # 0: spiral_chart
-        # 1: bar_chart
-        # 2: pyramid
-        # 3: surface_plot
-        # -1: not used (for terrain slots that aren't active)
+
         
         gene_space = [
             # Gene 0: Badge type (disc, rectangular, triangular)
@@ -482,6 +497,12 @@ class CrazyStockBadge:
             
             # Genes 2-7: Terrain types (up to 6 different types)
             # Each can be spiral_chart, bar_chart, pyramid, surface_plot
+                    # Define terrain types:
+                    # 0: spiral_chart
+                    # 1: bar_chart
+                    # 2: pyramid
+                    # 3: surface_plot
+                    # -1: not used (for terrain slots that aren't active)
             [0, 1, 2, 3],  # Terrain type 1
             [0, 1, 2, 3],  # Terrain type 2
             [0, 1, 2, 3],  # Terrain type 3

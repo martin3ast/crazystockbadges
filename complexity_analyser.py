@@ -1,39 +1,38 @@
-'''
+"""
 Complexity estimation functions
 
-A set of functions (experiments) to estimate the model complexity, this is for the fitness function for our 
-Genetic algorithm. The class takes in a Solid Python model , that is traversed node by node, counting metrics
+A set of functions to estimate the model complexity for the fitness function in our 
+Genetic algorithm. The class takes in a Solid Python model, traverses it node by node, 
+and counts various metrics.
 
 Version 1.0: Cline implementation for Martin East - Adapted from complexity_estimation.py - Apr 17, 2025
 Version 2.0: Martin East - Moved to separate file for better organization, read and analysed - Apr 17, 2025
 Version 3.0: Cline for Martin East - reworked from prototype, under instructiom to keep it simple - Apr 23, 2025
-Version 3.1:  Martin East - minor renames and tidy, weighting factors reviews and documented - Apr 23, 2025
+Version 3.1: Martin East - minor renames and tidy, weighting factors reviews and documented - Apr 23, 2025
+Version 3.2: Martin East - discard base coverage calculations - April 25, 2025
+Version 3.3: Martin East - Fix and fill in logic gaps, some parts of the report are not running atall - April 25, 2025
+Version 3.4: Cline for Martin East - Greatly simplified to focus on object counts - April 25, 2025
+"""
 
-'''
-
-import re
 from collections import defaultdict
-from solid import cube, sphere, cylinder, polyhedron, polygon
-from solid import union, difference, intersection, hull, minkowski
+from solid import polygon, polyhedron
 
 class ComplexityAnalyzer:
     """
     Analyzes the complexity of a SolidPython node structure.
-    Consolidates all complexity analysis into a single class.
-    
-    Version 3.0: Cline for Martin East - reworked from prototype - Apr 23, 2025
+    Simplified to focus on counting objects rather than complex calculations.
     """
     
-    def __init__(self, node):
+    def __init__(self, solidpython_node):
         """
         Initialize with a SolidPython node structure
         
         Args:
             node: A SolidPython node structure to analyze
         """
-        self.node = node
+        self.node = solidpython_node
         
-        # Initialize metrics
+        # Initialize metrics with simple counters
         self.metrics = {
             'max_depth': 0,
             'total_nodes': 0,
@@ -49,145 +48,138 @@ class ComplexityAnalyzer:
         }
         
         # Perform analysis
-        self._analyze_structure()
-        self.metrics['complexity_score'] = self._model_complexity_score(self.node)
-    
-    def _analyze_structure(self):
-        """Analyze the node structure and collect metrics"""
-        self._traverse_node(self.node)
-    
-    def _traverse_node(self, node, depth=0):
+        self._traverse_and_count_nodes(self.node)
+        
+        # Calculate simple complexity score based on counts
+        self.metrics['complexity_score'] = self._calculate_simple_complexity_score()
+
+    def print_metrics(self):
         """
-        Unified node traversal that collects metrics
+        Print the collected metrics in a readable format
         """
+        print("Complexity Analysis Metrics:")
+        print(f"  Total Nodes: {self.metrics['total_nodes']}")
+        print(f"  Max Depth: {self.metrics['max_depth']}")
+        
+        print("\nPrimitive Counts:")
+        for prim, count in self.metrics['primitive_counts'].items():
+            print(f"  {prim}: {count}")
+        
+        print("\nOperation Counts:")
+        for op, count in self.metrics['operation_counts'].items():
+            print(f"  {op}: {count}")
+        
+        print("\nPolygonal Metrics:")
+        for key, value in self.metrics['polygonal_metrics'].items():
+            print(f"  {key}: {value}")
+        
+        print(f"\nComplexity Score: {self.metrics['complexity_score']:.2f}")
+    
+    def _traverse_and_count_nodes(self, node, depth=0):
+        """
+        Simplified node traversal that just counts objects
+        """
+        if node is None:
+            return
+            
         self.metrics['total_nodes'] += 1
         self.metrics['max_depth'] = max(self.metrics['max_depth'], depth)
         
+        # Handle different node types
         if isinstance(node, (list, tuple)):
+            # Handle list or tuple of nodes
             for child in node:
-                self._traverse_node(child, depth+1)
-        elif hasattr(node, 'children'):
-            # Operation node
+                self._traverse_and_count_nodes(child, depth+1)
+        elif hasattr(node, 'children') and node.children:
+            # Operation node with children
             op_name = node.__class__.__name__.lower()
             self.metrics['operation_counts'][op_name] += 1
             
+            # Process all children
             for child in node.children:
-                self._traverse_node(child, depth+1)
+                self._traverse_and_count_nodes(child, depth+1)
+        elif hasattr(node, 'child') and node.child is not None:
+            # Handle nodes with a single child (like translate, rotate, etc.)
+            op_name = node.__class__.__name__.lower()
+            self.metrics['operation_counts'][op_name] += 1
+            
+            # Process the child
+            self._traverse_and_count_nodes(node.child, depth+1)
+        elif hasattr(node, 'objects') and node.objects:
+            # Handle nodes with objects attribute (like union, difference, etc.)
+            op_name = node.__class__.__name__.lower()
+            self.metrics['operation_counts'][op_name] += 1
+            
+            # Process all objects
+            for obj in node.objects:
+                self._traverse_and_count_nodes(obj, depth+1)
         else:
-            # Primitive node
+            # Primitive node or leaf node
             prim_name = node.__class__.__name__.lower()
             self.metrics['primitive_counts'][prim_name] += 1
             
-            # Collect polygonal metrics
+            # Count polygonal elements
             if isinstance(node, polygon):
                 self.metrics['polygonal_metrics']['polygon_count'] += 1
-                points = len(getattr(node, 'points', []))
-                self.metrics['polygonal_metrics']['total_points'] += points
-                self.metrics['polygonal_metrics']['max_points_per_polygon'] = max(
-                    self.metrics['polygonal_metrics']['max_points_per_polygon'], 
-                    points
-                )
+                
+                # Count points
+                points_count = 0
+                if hasattr(node, 'points') and node.points:
+                    points_count = len(node.points)
+                elif hasattr(node, 'params') and 'points' in node.params:
+                    points_count = len(node.params['points'])
+                elif hasattr(node, '_points'):
+                    points_count = len(node._points)
+                
+                if points_count > 0:
+                    self.metrics['polygonal_metrics']['total_points'] += points_count
+                    self.metrics['polygonal_metrics']['max_points_per_polygon'] = max(
+                        self.metrics['polygonal_metrics']['max_points_per_polygon'], 
+                        points_count
+                    )
+                
             elif isinstance(node, polyhedron):
                 self.metrics['polygonal_metrics']['polyhedron_count'] += 1
-                points = len(getattr(node, 'points', []))
-                faces = len(getattr(node, 'faces', []))
-                self.metrics['polygonal_metrics']['total_points'] += points
-                self.metrics['polygonal_metrics']['total_faces'] += faces
-    
-    def _model_complexity_score(self, node):
-        """
-        Calculate complexity score with emphasis on operations that
-        create complex, "crazy" structures.
-        
-        Returns: float representing complexity (higher = more complex/crazy)
-        """
-        if isinstance(node, (list, tuple)):
-            return sum(self._model_complexity_score(child) for child in node)
-        elif hasattr(node, 'children'):
-            # Operations multiply complexity of their children
-            # Give higher weights to operations that create more complex structures
-            if isinstance(node, difference):
-                op_factor = 2.5  # Differences create interesting shapes
-            elif isinstance(node, intersection):
-                op_factor = 2.2  # Intersections can create complex forms
-            elif isinstance(node, hull):
-                op_factor = 3.0  # Hull operations often create organic shapes
-            elif isinstance(node, minkowski):
-                op_factor = 3.5  # Minkowski sums create very complex shapes
-            else:
-                op_factor = 1.8  # Default for other operations like union
                 
-            # Additional bonus for operations with many children
-            child_count_bonus = min(len(node.children) * 0.2, 1.5)
-            
-            return (op_factor + child_count_bonus) * sum(
-                self._model_complexity_score(child) for child in node.children
-            )
-        else:
-            return self._estimate_geometry_complexity(node)
+                # Count points and faces
+                points_count = 0
+                faces_count = 0
+                
+                if hasattr(node, 'points') and node.points:
+                    points_count = len(node.points)
+                elif hasattr(node, 'params') and 'points' in node.params:
+                    points_count = len(node.params['points'])
+                elif hasattr(node, '_points'):
+                    points_count = len(node._points)
+                
+                if hasattr(node, 'faces') and node.faces:
+                    faces_count = len(node.faces)
+                elif hasattr(node, 'params') and 'faces' in node.params:
+                    faces_count = len(node.params['faces'])
+                elif hasattr(node, '_faces'):
+                    faces_count = len(node._faces)
+                
+                self.metrics['polygonal_metrics']['total_points'] += points_count
+                self.metrics['polygonal_metrics']['total_faces'] += faces_count
     
-    def _estimate_geometry_complexity(self, obj):
+    def _calculate_simple_complexity_score(self):
         """
-        Estimate geometric complexity with emphasis on polygonal complexity.
-        This function prioritizes complex polygonal structures to maximize
-        the "craziness" factor of the generated models.
-        
-        Returns complexity score (higher = more complex/crazy)
+        Calculate a simple complexity score based on counts
         """
-        if isinstance(obj, cube):
-            # Simple cube has low complexity
-            return 1
-        elif isinstance(obj, sphere):
-            # Sphere complexity depends on $fn resolution
-            fn = getattr(obj, 'fn', 30)  # Default OpenSCAD resolution
-            return min(fn / 8, 12)  # Increased maximum score for spheres
-        elif isinstance(obj, cylinder):
-            # Cylinder complexity depends on both resolution and parameters
-            fn = getattr(obj, 'fn', 30)
-            r = getattr(obj, 'r', 1)
-            h = getattr(obj, 'h', 1)
-            return min((fn * (r + h)) / 15, 18)  # Increased maximum score for cylinders
-        elif isinstance(obj, polyhedron):
-            # Polyhedrons are inherently complex - heavily reward these
-            points = len(getattr(obj, 'points', []))
-            faces = len(getattr(obj, 'faces', []))
-            # Significantly increased weight for polyhedrons
-            return min((points + faces * 2) / 8, 30)  # Much higher maximum score
-        elif isinstance(obj, polygon):
-            # Polygons with many points are complex
-            points = len(getattr(obj, 'points', []))
-            return min(points / 5, 25)  # High score for complex polygons
-        else:
-            # Check for text objects which can be complex
-            if hasattr(obj, 'text'):
-                text_length = len(getattr(obj, 'text', ''))
-                return min(text_length * 1.5, 15)  # Text adds complexity
-            return 0  # Unknown type
-    
-    def calculate_polygonal_complexity_score(self):
-        """
+        # Sum of all primitive and operation counts
+        primitive_sum = sum(self.metrics['primitive_counts'].values())
+        operation_sum = sum(self.metrics['operation_counts'].values())
         
-        Calculate a single polygonal complexity score based on collected metrics
+        # Add polygonal metrics
+        polygonal_sum = (
+            self.metrics['polygonal_metrics']['polygon_count'] + 
+            self.metrics['polygonal_metrics']['polyhedron_count'] * 2 +  # Weight polyhedrons slightly more
+            self.metrics['polygonal_metrics']['total_points'] * 0.1 +
+            self.metrics['polygonal_metrics']['total_faces'] * 0.2
+        )
         
-        Weighting rationale:
-        - total_points (0.5): Base contribution of points
-        - max_points_per_polygon (2.0): Rewards complex individual polygons
-        - polyhedron_count (10.0): Heavily rewards polyhedrons as most complex primitives
-        - total_faces (1.5): Rewards models with more faces for visual complexity
-        
-        Returns: float representing polygonal complexity
-        
-        """
-        metrics = self.metrics['polygonal_metrics']
-        if metrics['polygon_count'] > 0 or metrics['polyhedron_count'] > 0:
-            return (
-                metrics['total_points'] * 0.5 + 
-                metrics['max_points_per_polygon'] * 2 + 
-                metrics['polyhedron_count'] * 10 + 
-                metrics['total_faces'] * 1.5
-            )
-        else:
-            return 0
+        # Simple weighted sum
+        return primitive_sum + operation_sum * 1.5 + polygonal_sum + self.metrics['max_depth'] * 0.5
     
     def get_complexity_report(self):
         """
@@ -195,6 +187,4 @@ class ComplexityAnalyzer:
         
         Returns: dict with all metrics and scores
         """
-        # Calculate polygonal complexity score before returning
-        self.metrics['polygonal_metrics']['polygonal_complexity_score'] = self.calculate_polygonal_complexity_score()
         return self.metrics

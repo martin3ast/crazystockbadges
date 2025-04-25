@@ -25,14 +25,9 @@ import time
 import random
 import numpy as np
 import pandas as pd
+import pygad
 from pathlib import Path
 
-# Import pyGAD for genetic algorithm
-try:
-    import pygad
-except ImportError:
-    print("pyGAD is not installed. Please install it using: pip install pygad or conda install pygad")
-    sys.exit(1)
 
 # Import improved modules
 from improved_cli import CrazyStockBadgeCLI

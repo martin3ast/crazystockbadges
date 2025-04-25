@@ -258,11 +258,11 @@ class Badge3DModel(ABC):
         
         # Ensure max_dim doesn't exceed max_size
         max_dim = min(max_dim, max_size * 0.9)
-        logger.info(f"Max dimension for terrain models: {max_dim}")
+        logger.debug(f"Max dimension for terrain models: {max_dim}")
         
         # Calculate the size of each terrain section based on weights
         section_sizes = [max_dim * weight for weight in weights]
-        logger.info(f"Section sizes for terrain models: {section_sizes}")
+        logger.debug(f"Section sizes for terrain models: {section_sizes}")
         
         # Combine the terrain models based on weights
         combined_model = None
@@ -861,16 +861,16 @@ class DiscBadge(Badge3DModel):
             terrain_types = self.params['terrain_types']
             weights = self.params['terrain_weights']
             
-            logger.info(f"Generating combined disc terrain with types: {terrain_types}")
-            logger.info(f"Using weights: {weights}")
+            logger.debug(f"Generating combined disc terrain with types: {terrain_types}")
+            logger.debug(f"Using weights: {weights}")
             
             terrain_model = self.generate_combined_terrain(terrain_types, weights)
         else:
             # Single terrain type
             terrain_type = self.params.get('terrain_type', 'spiral_chart')
             
-            logger.info(f"Generating disc terrain with base height={base_height}")
-            logger.info(f"Terrain type: {terrain_type}")
+            logger.debug(f"Generating disc terrain with base height={base_height}")
+            logger.debug(f"Terrain type: {terrain_type}")
             
             if terrain_type == 'spiral_chart':
                 terrain_model = self.generate_spiral_chart()
@@ -912,12 +912,12 @@ class RectangularBadge(Badge3DModel):
         height = self.params.get('base_height', 1)
         z_offset = 0
         
-        logger.info(f"Base width: {width}, depth: {depth}, height: {height}")
+        logger.debug(f"Base width: {width}, depth: {depth}, height: {height}")
         
         # Number of points to use on each side of the rectangle
         # Distribute the data points around the perimeter
         num_points = len(self.data)
-        logger.info(f"Number of data points: {num_points}")
+        logger.debug(f"Number of data points: {num_points}")
         points_per_side = num_points // 4  # Distribute points across 4 sides
         
         points = []
@@ -984,22 +984,22 @@ class RectangularBadge(Badge3DModel):
         base_depth = self.params.get('base_depth', 60)
         
         # Log dimensions for debugging
-        logger.info(f"Generating terrain with base dimensions: width={base_width}, depth={base_depth}, height={base_height}")
+        logger.debug(f"Generating terrain with base dimensions: width={base_width}, depth={base_depth}, height={base_height}")
         
         # Check if multiple terrain types are specified
         if 'terrain_types' in self.params and 'terrain_weights' in self.params:
             terrain_types = self.params['terrain_types']
             weights = self.params['terrain_weights']
             
-            logger.info(f"Generating combined rectangular terrain with types: {terrain_types}")
-            logger.info(f"Using weights: {weights}")
+            logger.debug(f"Generating combined rectangular terrain with types: {terrain_types}")
+            logger.debug(f"Using weights: {weights}")
             
             # Generate combined terrain model
             terrain_model = self.generate_combined_terrain(terrain_types, weights)
         else:
             # Single terrain type
             terrain_type = self.params.get('terrain_type', 'bar_chart')
-            logger.info(f"Terrain type: {terrain_type}")
+            logger.debug(f"Terrain type: {terrain_type}")
             
             if terrain_type == 'spiral_chart':
                 # Pass base dimensions to ensure spiral fits within the base
@@ -1155,8 +1155,8 @@ class TriangularBadge(Badge3DModel):
             terrain_types = self.params['terrain_types']
             weights = self.params['terrain_weights']
             
-            logger.info(f"Generating combined triangular terrain with types: {terrain_types}")
-            logger.info(f"Using weights: {weights}")
+            logger.debug(f"Generating combined triangular terrain with types: {terrain_types}")
+            logger.debug(f"Using weights: {weights}")
             
             # Generate combined terrain model
             terrain_model = self.generate_combined_terrain(terrain_types, weights)
@@ -1282,10 +1282,11 @@ class BadgeFactory:
     Factory class for creating different types of badges.
     
     Version 1.0 - Cline implementation for Martin East - Creates appropriate badge type based on parameters - Apr 13, 2025.
+    Version 2.0 - Martin East - Added verbose flag parameter - Apr 24, 2025.
     """
     
     @staticmethod
-    def create_badge(badge_type, stock_data, ticker_symbol, params=None):
+    def create_badge(badge_type, stock_data, ticker_symbol, params=None, verbose=False):
         """
         Create a badge of the specified type.
         
@@ -1294,10 +1295,14 @@ class BadgeFactory:
             stock_data (pandas.DataFrame): Stock data
             ticker_symbol (str): Stock ticker symbol
             params (dict): Additional parameters for the badge
+            verbose (bool): Whether to enable verbose (INFO) logging
             
         Returns:
             Badge3DModel: Badge model instance
         """
+        # Set logger level based on verbose flag
+        log_level = logging.INFO if verbose else logging.WARN
+        logger.setLevel(log_level)
         if badge_type == 'disc':
             return DiscBadge(stock_data, ticker_symbol, params)
         elif badge_type == 'rectangular':
@@ -1323,6 +1328,7 @@ def main():
     parser.add_argument('--terrain-types', type=str, help='Comma-separated list of terrain types to combine (spiral_chart, bar_chart, pyramid)')
     parser.add_argument('--terrain-weights', type=str, help='Optional comma-separated list of weights for each terrain type (e.g., 0.5,0.3,0.2)')
     parser.add_argument('--output', type=str, help='Output file name')
+    parser.add_argument('--verbose', action='store_true', help='Enable verbose (INFO) logging')
     args = parser.parse_args()
     
     try:
@@ -1360,13 +1366,17 @@ def main():
                 # Equal weights if not specified
                 params['terrain_weights'] = [1.0/len(terrain_types)] * len(terrain_types)
                 
-            logger.info(f"Using terrain types: {terrain_types} with weights: {params['terrain_weights']}")
+            logger.debug(f"Using terrain types: {terrain_types} with weights: {params['terrain_weights']}")
         elif args.terrain_type:
             # For backward compatibility
             params['terrain_type'] = args.terrain_type
         
+        # Set logger level based on verbose flag
+        log_level = logging.INFO if args.verbose else logging.WARN
+        logger.setLevel(log_level)
+        
         # Create the badge
-        badge = BadgeFactory.create_badge(args.badge_type, stock_data, args.ticker, params)
+        badge = BadgeFactory.create_badge(args.badge_type, stock_data, args.ticker, params, verbose=args.verbose)
 
         # Save the model
         output_file = args.output or f"{args.ticker}_{args.badge_type}_badge.scad"
