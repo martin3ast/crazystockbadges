@@ -501,3 +501,45 @@ This organization makes the project structure cleaner and more maintainable, wit
 After initial testing, I discovered that the sentiment analysis JSON file was not being written to the cache directory. The issue was in the crazystockbadges.py file, where the sentiment analysis was being performed but the results were not being explicitly saved to the cache directory.
 
 I fixed this by adding code to explicitly save the analysis results to the cache directory after analyzing the report. This ensures that the sentiment analysis results are properly saved to the cache directory, making them available for other parts of the application that need to read this data.
+
+## Session 9: Fixing PyGAD Fitness Function (April 26, 2025)
+
+### Initial Request
+
+**User:** Check the fitness function in careful detail against pygad documentation is the correct value being returned?
+
+**Cline:** After examining the fitness function in crazystockbadges.py and comparing it with PyGAD documentation, I identified an issue with how fitness values were being returned.
+
+### Implementation Approach
+
+I analyzed the fitness function implementation and found that:
+
+1. The function was only returning meaningful fitness values for the last solution in each generation
+2. All other solutions were receiving a placeholder value of 0
+3. This approach could mislead the genetic algorithm during selection and crossover operations
+
+### Key Changes Made
+
+I implemented two sequential improvements:
+
+1. **First Fix: Proper Individual Fitness Values**
+   - Modified the function to calculate and return meaningful fitness values for each solution individually
+   - Added proper tracking of min/max values for normalization across the generation
+   - Ensured consistent normalization for all solutions
+   - Maintained the same weighting approach for metrics
+
+2. **Second Fix: Raw Metric Values with Weights**
+   - Based on user feedback, simplified the approach further
+   - Removed normalization entirely
+   - Used raw metric values with weights directly
+   - Simplified the code by removing unnecessary tracking of min/max values
+
+### Final Result
+
+The final implementation:
+- Directly uses raw metric values with weights: `fitness = (total_nodes * 0.4) + (complexity_score * 0.6)`
+- Returns proper fitness values for all solutions in the population
+- Maintains the same relative importance of metrics through weights
+- Produces more consistent and reliable results for the genetic algorithm
+
+This fix ensures that PyGAD receives appropriate fitness values for all solutions, leading to better optimization results and more consistent badge generation.

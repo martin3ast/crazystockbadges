@@ -173,6 +173,7 @@ class CrazyStockBadge:
         print(f"{Fore.LIGHTBLUE_EX}... Complexity score: {self.complexity_report['complexity_score']:.2f}{Style.RESET_ALL}")
         print(f"{Fore.LIGHTBLUE_EX}... Operation counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['operation_counts'].items()])}{Style.RESET_ALL}")
         print(f"{Fore.LIGHTBLUE_EX}... Primitive counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['primitive_counts'].items()])}{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLUE_EX}... Best fitness: {self.ga_instance.best_solution()[1]:.2f}{Style.RESET_ALL}")
 
 
         output_file = self.args.output 
@@ -210,7 +211,7 @@ class CrazyStockBadge:
             num_generations=self.ga_generations,
             num_parents_mating=2,
             fitness_func=self.fitness_function,
-            sol_per_pop=3,
+            sol_per_pop=50,
             num_genes=len(gene_space),
             gene_space=gene_space,
             parent_selection_type="tournament",
@@ -218,7 +219,7 @@ class CrazyStockBadge:
             crossover_type="uniform",
             mutation_type="random",
             mutation_percent_genes=20,
-            keep_elitism=1,
+            keep_elitism=2,
             on_generation=self._on_generation
         )
         
@@ -232,7 +233,9 @@ class CrazyStockBadge:
         
         # Get the best badge and complexity report
         best_badge, complexity_report, _ = self.ga_instance.badges[solution_idx]
-        best_params = self.genes_to_badge_params(solution)
+        
+        # Instead of regenerating parameters from genes, use the actual parameters from the badge
+        best_params = best_badge.params
         
         # Store the complexity report for display
         self.complexity_report = complexity_report
@@ -408,6 +411,8 @@ class CrazyStockBadge:
         Version 3.0: Cline refactor for Martin East - Updated to work with ComplexityAnalyzer - Apr 23, 2025.
         Version 3.1: Martin East - Fix issue with model generation - Apr 25, 2025.
         Version 3.2: Martin East - Modifying weights for fitness - Apr 25, 2025.
+        Version 3.3: Cline - Fixed fitness function to return proper values for all solutions - Apr 26, 2025.
+        Version 3.4: Cline - Modified to use raw metric values with weights instead of normalization - Apr 26, 2025.
         """
         params = self.genes_to_badge_params(solution)
 
@@ -422,86 +427,82 @@ class CrazyStockBadge:
             
         analyzer = ComplexityAnalyzer(badge.final_model)
         report = analyzer.get_complexity_report()
-        print(f"Complexity report for solution {solution_idx}: {report}")
-        ga_instance.population_stats = getattr(ga_instance, 'population_stats', [])
-        ga_instance.population_stats.append(report)
-        
-        ga_instance.badges = getattr(ga_instance, 'badges', {})
-        ga_instance.badges[solution_idx] = (badge, report, 0)
-        
-        # Process all solutions when the last one is evaluated
-        # Get the population size from the sol_per_pop attribute instead of pop_size
-        if solution_idx == ga_instance.sol_per_pop - 1:
-            metrics = [
-                'total_nodes', 
-                'complexity_score'
-            ]
-            
-            min_values = {metric: min(s[metric] for s in ga_instance.population_stats) for metric in metrics}
-            max_values = {metric: max(s[metric] for s in ga_instance.population_stats) for metric in metrics}
-            
-            # Ensure no division by zero
-            for metric in metrics:
-                if max_values[metric] == min_values[metric]:
-                    max_values[metric] = min_values[metric] + 1
-            
-            # Calculate fitness for all solutions
-            # Get the solution indices from the badges dictionary
-            solution_indices = list(ga_instance.badges.keys())
+        self.logger.debug(f"Complexity report for solution {solution_idx}: {report}")
 
-            for i, (solution_idx, report) in enumerate(zip(solution_indices, ga_instance.population_stats)):
-                normalized_metrics = {
-                    metric: (report[metric] - min_values[metric]) / (max_values[metric] - min_values[metric])
-                    for metric in metrics
-                }
-                # Assign weights to the metrics
-                # Some experimentation, but these are the weights I found to work best (Martin)
-                weights = {
-                    'total_nodes': 0.4,
-                    'complexity_score': 0.6
-                }
-                
-                fitness = sum(normalized_metrics[m] * weights[m] for m in metrics)
-                
-                badge, _, _ = ga_instance.badges[solution_idx]
-                ga_instance.badges[solution_idx] = (badge, report, fitness)
-                #ga_instance.population_stats[i] = fitness
-                # Print the fitness for each solution
-                print(f"Solution {solution_idx}: Fitness = {fitness:.2f}, Total nodes = {report['total_nodes']}, Complexity score = {report['complexity_score']:.2f}")
-                # Print the parameters for each solution
-                print(f"Parameters: {', '.join([f'{k}: {v}' for k, v in badge.params.items()])}")
-                # Print the terrain types for each solution
-                print(f"Terrain types: {', '.join(badge.params['terrain_types'])}")
-                # Print the text content for each solution
-                print(f"Text content: {badge.params['text_content']}")
-                # Print the text position for each solution
-                print(f"Text position: {badge.params['text_position']}")
-                # Print the text size for each solution
-                print(f"Text size: {badge.params['text_size']}")
-                # Print the text depth for each solution
-                print(f"Text depth: {badge.params['text_depth']}")
-                # Print the spiral turns for each solution
-                print(f"Spiral turns: {badge.params['spiral_turns']}")
-                # Print the base radius for each solution
-
-
-            ga_instance.population_stats = []
-            return ga_instance.badges[solution_idx][2]
+        # Initialize badges dictionary if it doesn't exist
+        if not hasattr(ga_instance, 'badges'):
+            ga_instance.badges = {}
         
-        return 0
+        # Store the badge and report
+        ga_instance.badges[solution_idx] = (badge, report, 0)  # Initial fitness placeholder
+        
+        # Define metrics to use for fitness calculation
+        metrics = [
+            'total_nodes', 
+            'complexity_score'
+        ]
+        
+        # Assign weights to the metrics
+        weights = {
+            'total_nodes': 1,
+            'complexity_score': 1 
+        }
+        
+        # Calculate fitness for this solution using raw metric values with weights
+        fitness = (report['total_nodes'] * weights['total_nodes']) + (report['complexity_score'] * weights['complexity_score'])
+        
+        # Update the fitness value in badges
+        ga_instance.badges[solution_idx] = (badge, report, fitness)
+        
+        # Print detailed information about this solution
+        self.logger.debug(f"Solution {solution_idx}: Fitness = {fitness:.2f}, Total nodes = {report['total_nodes']}, Complexity score = {report['complexity_score']:.2f}")
+        self.logger.debug(f"Parameters: {', '.join([f'{k}: {v}' for k, v in badge.params.items()])}")
+        self.logger.debug(f"Terrain types: {', '.join(badge.params['terrain_types'])}")
+        self.logger.debug(f"Text content: {badge.params['text_content']}")
+        self.logger.debug(f"Text position: {badge.params['text_position']}")
+        self.logger.debug(f"Text size: {badge.params['text_size']}")
+        self.logger.debug(f"Text depth: {badge.params['text_depth']}")
+        self.logger.debug(f"Spiral turns: {badge.params['spiral_turns']}")
+        self.logger.debug(f"Badge type: {badge.params['badge_type']}")
+
+    
+        # Return the calculated fitness value
+        return fitness
         
     def _on_generation(self, ga_instance):
         """
         Callback function called after each generation.
         
         Attribution: Cline implementation for Martin East - Generation callback - Apr 17, 2025
+        Version 2.0: Cline implementation for Martin East - Added SCAD model generation for fittest individual - Apr 27, 2025
         
         Args:
             ga_instance: The genetic algorithm instance
         """
+        best_solution, best_fitness, solution_idx = ga_instance.best_solution()
+        
+        best_badge, _, _ = ga_instance.badges[solution_idx]
+        params = best_badge.params
+        
+        print(f"Generation {ga_instance.generations_completed}: Solution #{solution_idx}, Fitness = {best_fitness:.2f}")
+        print(f"Parameters: Badge Type = {params['badge_type']}, Terrain Types = {params['terrain_types']}")
+        print(f"Text Content = '{params['text_content']}', Text Position = {params['text_position']:.2f}°")
+        print("-" * 80)
+        
+        # Create a SCAD model for the fittest individual in each generation
+        generation_num = ga_instance.generations_completed
+        output_file = f"./scad_models/{self.ticker}_gen{generation_num}_badge.scad"
+        
+        # Ensure scad_models directory exists
+        os.makedirs("./scad_models", exist_ok=True)
+        
+        # Save the model to file
+        best_badge.save_to_file(output_file)
+        self.logger.info(f"Generation {generation_num}: Saved best model to {output_file}")
+        
         if ga_instance.generations_completed % 10 == 0:
             best_solution, best_fitness, _ = ga_instance.best_solution()
-            self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
+            self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness (maximised) = {best_fitness:.2f}")
 
 
     def _create_gene_space(self):
