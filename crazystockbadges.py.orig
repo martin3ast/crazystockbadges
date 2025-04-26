@@ -28,7 +28,6 @@ import pdb
 import marketdata as md
 from badge_factory import BadgeFactory
 from complexity_analyser import ComplexityAnalyzer
-from sentiment_analyser import StockReportAnalyzer
 from solid import scad_render
 import pygad
 
@@ -128,22 +127,6 @@ class CrazyStockBadge:
                 with open("stock_report", "r") as f:
                     report = f.read()
                 print(f"\n{Fore.MAGENTA}{report}{Style.RESET_ALL}\n")
-                
-                # Create a StockReportAnalyzer instance
-                print(f"{Fore.BLUE}... Analyzing sentiment in the stock report...{Style.RESET_ALL}")
-                report_analyzer = StockReportAnalyzer()
-                
-                # Analyze the report
-                analysis = report_analyzer.analyze_report()
-                
-                # Save the analysis to the cache directory
-                cache_file = os.path.join("./cache", "sentiment_analysis.json")
-                print(f"{Fore.BLUE}... Saving sentiment analysis to {cache_file}...{Style.RESET_ALL}")
-                report_analyzer.save_analysis(analysis, cache_file)
-                
-                # Print the sentiment analysis summary
-                print(f"\n{Fore.BLUE}=== SENTIMENT ANALYSIS SUMMARY ==={Style.RESET_ALL}")
-                report_analyzer.print_summary(analysis)
         
         #
         # Badge Generation, using a genetic algorithm
@@ -166,22 +149,17 @@ class CrazyStockBadge:
             
         # Create analyzer and get complexity report
         analyzer = ComplexityAnalyzer(self.badge.final_model)
-        # Print the complexity report
-        print(f"\n{Fore.LIGHTBLUE_EX}=== BADGE COMPLEXITY REPORT ==={Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Total nodes: {self.complexity_report['total_nodes']}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Max depth: {self.complexity_report['max_depth']}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Complexity score: {self.complexity_report['complexity_score']:.2f}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Operation counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['operation_counts'].items()])}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Primitive counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['primitive_counts'].items()])}{Style.RESET_ALL}")
+        self.complexity_report = analyzer.get_complexity_report()
+        print(f"{Fore.BLUE}... Badge complexity analysis complete!{Style.RESET_ALL}")
 
-
-        output_file = self.args.output 
+        output_file = self.args.output if self.args.output else "disc.scad"
         print(f"{Fore.BLUE}... Writing SCAD object to {output_file}...{Style.RESET_ALL}")
 
         
+        #
         # Closing information
         #
-        output_file = self.args.output if self.args.output else f"./scad_models/{self.ticker}_badge.scad"
+        output_file = self.args.output if self.args.output else "disc.scad"
         
         print(f"\n{Fore.GREEN}✅ Badge generation complete!{Style.RESET_ALL}")
         print(f"{Fore.CYAN}📁 Files created:{Style.RESET_ALL}")
@@ -195,7 +173,7 @@ class CrazyStockBadge:
 
     def generate_badge(self):
         """
-        Generate 3D badge using genetic algorithm with focus on complexity and craziness.
+        Generate 3D badge using genetic algorithm.
         
         Version 2.0: Cline refactor for Martin East - refactor this function after changes to badge_factory.py.
         Attribution: Cline implementation for Martin East - Complexity-focused badge generation - Apr 17, 2025
@@ -210,7 +188,7 @@ class CrazyStockBadge:
             num_generations=self.ga_generations,
             num_parents_mating=2,
             fitness_func=self.fitness_function,
-            sol_per_pop=3,
+            sol_per_pop=40,
             num_genes=len(gene_space),
             gene_space=gene_space,
             parent_selection_type="tournament",
@@ -218,7 +196,7 @@ class CrazyStockBadge:
             crossover_type="uniform",
             mutation_type="random",
             mutation_percent_genes=20,
-            keep_elitism=1,
+            keep_elitism=2,
             on_generation=self._on_generation
         )
         
@@ -228,7 +206,7 @@ class CrazyStockBadge:
         
         # Get the best solution
         solution, solution_fitness, solution_idx = self.ga_instance.best_solution()
-        self.logger.info(f"Best solution (individual {solution_idx}) found with fitness: {solution_fitness:.2f}")
+        self.logger.info(f"Best solution found with fitness: {solution_fitness:.2f}")
         
         # Get the best badge and complexity report
         best_badge, complexity_report, _ = self.ga_instance.badges[solution_idx]
@@ -236,35 +214,53 @@ class CrazyStockBadge:
         
         # Store the complexity report for display
         self.complexity_report = complexity_report
+        
+        # Set text content to one-word summary if available
+        #if hasattr(self, 'one_word_summary'):
+        #    self.logger.info(f"Setting badge text to sentiment summary: {self.one_word_summary}")
+        #    best_params['text_content'] = self.one_word_summary
+        #    
+        #    # Regenerate the badge with the new text
+        #    best_badge = BadgeFactory.create_badge(
+        #        best_params['badge_type'], 
+        #        self.mdm.data, 
+        #        self.ticker, 
+        #        best_params,
+        #        verbose=self.args.verbose
+        #    )
+            #best_badge.generate_base()
+            #best_badge.generate_terrain()
+            #best_badge.generate_text()
+            #best_badge.combine_models()
             
-        # Save the best badge to scad_models directory
-        if self.args.output:
-            # If output file is specified, use it but ensure it's in scad_models directory
-            if not self.args.output.startswith("./scad_models/"):
-                output_file = f"./scad_models/{os.path.basename(self.args.output)}"
-            else:
-                output_file = self.args.output
-        else:
-            # Default output file in scad_models directory
-            output_file = f"./scad_models/{self.args.ticker}_badge.scad"
+            # Update complexity report for the new badge
+            # Ensure the badge has its final_model generated
+            #if best_badge.final_model is None:
+            #    best_badge.combine_models()
+                
+        #    analyzer = ComplexityAnalyzer(best_badge.final_model)
+        #    analyzer.print_metrics()
+        #    self.complexity_report = analyzer.get_complexity_report()
         
-        self.args.output = output_file
-        self.logger.info(f"Saving badge to {output_file}")
-
-        # Ensure scad_models directory exists
-        os.makedirs("./scad_models", exist_ok=True)
-        
+        # Save the best badge
+        output_file = self.args.output or "disc.scad"
         best_badge.save_to_file(output_file)
         
         # Store the results
         self.badge = best_badge
         self.badge_params = best_params
         self.badge_output_file = output_file
-
+        
+        # Log badge details
+        self.logger.info(f"Badge generation complete. Output file: {output_file}")
+        self.logger.info(f"Badge type: {best_params['badge_type']}")
+        
         # Log terrain types
         if 'terrain_types' in best_params:
             terrain_types = best_params['terrain_types']
+            terrain_weights = best_params['terrain_weights']
             self.logger.info(f"Terrain types: {', '.join(terrain_types)}")
+            self.logger.info(f"Terrain weights: {', '.join([f'{w:.2f}' for w in terrain_weights])}")
         else:
             self.logger.info(f"Terrain type: {best_params.get('terrain_type', 'N/A')}")
         
@@ -272,11 +268,6 @@ class CrazyStockBadge:
         self.logger.info(f"Complexity score: {self.complexity_report['complexity_score']:.2f}")
         self.logger.info(f"Total nodes: {self.complexity_report['total_nodes']}")
         self.logger.info(f"Max depth: {self.complexity_report['max_depth']}")
-                
-        # Log badge details
-        self.logger.info(f"Badge generation complete. Output file: {output_file}")
-        self.logger.info(f"Badge type: {best_params['badge_type']}")
-        
 
     def get_text_content(self, text_type, sentiment):
         """
@@ -295,12 +286,8 @@ class CrazyStockBadge:
             return self.mdm.get_buy_sell_hold(sentiment)
         elif text_type == 'latest_macd':
             return self.mdm.get_latest_macd()
-        elif text_type == 'high':
-            return self.mdm.get_high()
-        elif text_type == 'low':
-            return self.mdm.get_low()
-        elif text_type == 'market_outlook':
-            return self.mdm.get_market_outlook(sentiment)
+        elif text_type == 'high_low':
+            return self.mdm.get_high_low()
         else:
             return "Unknown"
         
@@ -320,8 +307,7 @@ class CrazyStockBadge:
         # Define badge types and terrain types
         badge_types = ['disc', 'rectangular', 'triangular']
         all_terrain_types = ['spiral_chart', 'bar_chart', 'pyramid', 'surface_plot']
-        # Text rotation held in continuous range 
-        text_content_types = ['one_word_analysis', 'buy_sell_hold', 'latest_macd', 'high', 'low', 'market_outlook']
+        text_positions = ['bottom', 'top']
         
         # Get badge type
         badge_type_idx = int(genes[0])
@@ -332,32 +318,31 @@ class CrazyStockBadge:
         
         # Get terrain types (genes 2-7)
         terrain_types = []
-        terrain_idx = int(genes[2])
+        terrain_weights = []
+        
         # Only use the first num_terrain_types terrain types
         for i in range(num_terrain_types):
-            terrain_idx = int(genes[2 + i])   
+            terrain_idx = int(genes[2 + i])
             terrain_types.append(all_terrain_types[terrain_idx])
+            # Equal weights for now
+            terrain_weights.append(1.0 / num_terrain_types)
         
-        # Get text position (continuous value between 0 and 360 degrees)
-        text_position = genes[6]  # Direct value, no indexing needed
+        # Get text position
+        text_position_idx = int(genes[8])
+        text_position = text_positions[text_position_idx]
         
-        # Get text type
-        text_type_idx = int(genes[7])
-        text_type = text_content_types[text_type_idx]
-        sentiment = self.mdm.get_sentiment()
-        text_content = self.ticker + " " + self.get_text_content(text_type, sentiment)
-    
         # Get base height
-        base_height = int(genes[8])
+        base_height = int(genes[9])
         
         # Get size parameter
-        size_idx = int(genes[9])
+        size_idx = int(genes[10])
         
         # Map size to badge-specific dimensions
         if badge_type == 'disc':
             # Small, medium, large disc sizes
             base_radius_map = [30, 50, 70]
             base_radius = base_radius_map[size_idx]
+            spiral_turns = 5  # Default value
         elif badge_type == 'rectangular':
             # Small, medium, large rectangular sizes
             base_width_map = [60, 90, 120]
@@ -368,29 +353,31 @@ class CrazyStockBadge:
             # Small, medium, large triangular sizes
             side_length_map = [60, 80, 100]
             side_length = side_length_map[size_idx]
-
-        # Get spiral turn
-        spiral_turns = int(genes[10])
         
         # Create parameters dictionary
         params = {
             'badge_type': badge_type,
             'text_position': text_position,
-            'text_content': text_content,
             'base_height': base_height,
             'height_range': (0, 10),  # Default height range
             'width_range': (0, 10),   # Default width range
+            'text_content': self.ticker,  # Default to ticker symbol
             'text_size': 10,  # Default text size
-            'text_depth': 2,   # Default text depth
-            'spiral_turns': spiral_turns
+            'text_depth': 2   # Default text depth
         }
         
         # Add terrain types if multiple
-        params['terrain_types'] = terrain_types
+        if len(terrain_types) > 1:
+            params['terrain_types'] = terrain_types
+            params['terrain_weights'] = terrain_weights
+        else:
+            # Single terrain type
+            params['terrain_type'] = terrain_types[0]
         
         # Add badge-specific parameters
         if badge_type == 'disc':
             params['base_radius'] = base_radius
+            params['spiral_turns'] = spiral_turns
         elif badge_type == 'rectangular':
             params['base_width'] = base_width
             params['base_depth'] = base_depth
@@ -407,7 +394,6 @@ class CrazyStockBadge:
         
         Version 3.0: Cline refactor for Martin East - Updated to work with ComplexityAnalyzer - Apr 23, 2025.
         Version 3.1: Martin East - Fix issue with model generation - Apr 25, 2025.
-        Version 3.2: Martin East - Modifying weights for fitness - Apr 25, 2025.
         """
         params = self.genes_to_badge_params(solution)
 
@@ -421,8 +407,10 @@ class CrazyStockBadge:
         badge.combine_models()
             
         analyzer = ComplexityAnalyzer(badge.final_model)
+        analyzer.print_metrics()
+
         report = analyzer.get_complexity_report()
-        print(f"Complexity report for solution {solution_idx}: {report}")
+        
         ga_instance.population_stats = getattr(ga_instance, 'population_stats', [])
         ga_instance.population_stats.append(report)
         
@@ -433,6 +421,7 @@ class CrazyStockBadge:
         # Get the population size from the sol_per_pop attribute instead of pop_size
         if solution_idx == ga_instance.sol_per_pop - 1:
             metrics = [
+                'max_depth', 
                 'total_nodes', 
                 'complexity_score'
             ]
@@ -448,43 +437,27 @@ class CrazyStockBadge:
             # Calculate fitness for all solutions
             # Get the solution indices from the badges dictionary
             solution_indices = list(ga_instance.badges.keys())
-
+            
             for i, (solution_idx, report) in enumerate(zip(solution_indices, ga_instance.population_stats)):
                 normalized_metrics = {
                     metric: (report[metric] - min_values[metric]) / (max_values[metric] - min_values[metric])
                     for metric in metrics
                 }
-                # Assign weights to the metrics
-                # Some experimentation, but these are the weights I found to work best (Martin)
+                
                 weights = {
-                    'total_nodes': 0.4,
-                    'complexity_score': 0.6
+                    'max_depth': 0.30,
+                    'total_nodes': 0.30,
+                    'complexity_score': 0.40
                 }
                 
                 fitness = sum(normalized_metrics[m] * weights[m] for m in metrics)
                 
                 badge, _, _ = ga_instance.badges[solution_idx]
                 ga_instance.badges[solution_idx] = (badge, report, fitness)
-                #ga_instance.population_stats[i] = fitness
-                # Print the fitness for each solution
-                print(f"Solution {solution_idx}: Fitness = {fitness:.2f}, Total nodes = {report['total_nodes']}, Complexity score = {report['complexity_score']:.2f}")
-                # Print the parameters for each solution
-                print(f"Parameters: {', '.join([f'{k}: {v}' for k, v in badge.params.items()])}")
-                # Print the terrain types for each solution
-                print(f"Terrain types: {', '.join(badge.params['terrain_types'])}")
-                # Print the text content for each solution
-                print(f"Text content: {badge.params['text_content']}")
-                # Print the text position for each solution
-                print(f"Text position: {badge.params['text_position']}")
-                # Print the text size for each solution
-                print(f"Text size: {badge.params['text_size']}")
-                # Print the text depth for each solution
-                print(f"Text depth: {badge.params['text_depth']}")
-                # Print the spiral turns for each solution
-                print(f"Spiral turns: {badge.params['spiral_turns']}")
-                # Print the base radius for each solution
-
-
+                
+                # Store the fitness value directly in the solution's fitness
+                # We'll skip updating last_generation_fitness as it might not be initialized yet
+            
             ga_instance.population_stats = []
             return ga_instance.badges[solution_idx][2]
         
@@ -519,35 +492,20 @@ class CrazyStockBadge:
             # Gene 0: Badge type (disc, rectangular, triangular)
             [0, 1, 2],
             
-            # Gene 1: Number of terrain types to use (1-6)
-            [1, 2, 3, 4],
-            
-            # Genes 2-5: Terrain types (up to 6 different types)
-            # Each can be spiral_chart, bar_chart, pyramid, surface_plot
-                    # Define terrain types:
-                    # 0: spiral_chart
-                    # 1: bar_chart
-                    # 2: pyramid
-                    # 3: surface_plot
-            [0, 1, 2, 3],  # Terrain type 1
-            [0, 1, 2, 3],  # Terrain type 2
-            [0, 1, 2, 3],  # Terrain type 3
-            [0, 1, 2, 3],  # Terrain type 4
-            
-            # Gene 6: Text position (rotation in degrees)
-            {'low': 0, 'high': 360},
+            # Gene 1: Number of terrain types to use (4)
+            [0, 1, 2, 3],
 
-            # Gene 7: Text type (one_word_analysis, buy_sell_hold, latest_macd, high, low, market_outlook)
-            [0, 1, 2, 3, 4, 5],
+            # Gene 2: Crazy score, has unusual effects
+            { low: 0, high: 360 },
+
+            # Gene 3: Text type (one_word_analysis, buy_sell_hold, latest_macd, high_low)
+            [0, 1, 2, 3],
             
-            # Gene 8: Base height (1-3)
+            # Gene 9: Base height (1-3)
             [1, 2, 3],
             
-            # Gene 9: Size (small, medium, large)
-            [0, 1, 2],
-            # Gene10: Spiral turns (1-3)
-            {'low': 3, 'high': 10}
-        
+            # Gene 10: Size (small, medium, large)
+            [0, 1, 2]
         ]
         
         return gene_space
@@ -563,6 +521,7 @@ def main():
     except Exception as e:
         print(f"\n{Fore.RED}Error: {str(e)}{Style.RESET_ALL}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

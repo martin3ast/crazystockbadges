@@ -2,6 +2,7 @@
 
 from solid import *
 import re
+from collections import defaultdict
 
 def count_csg_operations(scad_code):
     """
@@ -63,9 +64,9 @@ class ComplexityAnalyzer:
             self.metrics['primitive_counts'][prim_name] += 1
 
 # Usage:
-analyzer = ComplexityAnalyzer()
-analyzer.analyze(model)
-print(analyzer.metrics)
+#analyzer = ComplexityAnalyzer()
+#analyzer.analyze(model)
+#print(analyzer.metrics)
 
 
 def estimate_geometry_complexity(obj):
@@ -165,4 +166,46 @@ def generate_complexity_report(model, filename=None):
     
     Basic Metrics:
     - Total CSG nodes: {analyzer.metrics['total_nodes']}
-    - Maximum tree
+    - Maximum tree depth: {analyzer.metrics['max_depth']}
+    - Overall complexity score: {complexity_score:.2f}
+    
+    Operation Counts:
+    {', '.join([f"{k}: {v}" for k, v in analyzer.metrics['operation_counts'].items()])}
+    
+    Primitive Counts:
+    {', '.join([f"{k}: {v}" for k, v in analyzer.metrics['primitive_counts'].items()])}
+    
+    CSG Operations in Generated Code:
+    {', '.join([f"{k}: {v}" for k, v in op_counts.items()])}
+    
+    Optimization Suggestions:
+    {chr(10).join(['- ' + s for s in suggest_optimizations(analyzer.metrics)])}
+    """
+    
+    if filename:
+        with open(filename, 'w') as f:
+            f.write(report)
+    
+    return report
+
+# Example usage of the complete report generator
+if __name__ == "__main__":
+    # Create a more complex model for testing
+    test_model = union()(
+        translate([0, 0, 0])(cube(10)),
+        translate([5, 5, 5])(sphere(3)),
+        difference()(
+            translate([10, 10, 0])(cylinder(r=5, h=10)),
+            translate([10, 10, -1])(cylinder(r=3, h=12))
+        ),
+        hull()(
+            translate([0, 20, 0])(cube(5)),
+            translate([5, 25, 5])(sphere(2))
+        )
+    )
+    
+    # Generate and print the report
+    print(generate_complexity_report(test_model))
+    
+    # Optionally save to file
+    # generate_complexity_report(test_model, "complexity_report.txt")

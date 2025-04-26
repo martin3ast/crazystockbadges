@@ -20,6 +20,8 @@ import time
 from datetime import datetime
 import logging
 from pathlib import Path
+import sys
+from sentiment_analyser import SentimentAnalyzer
 
 # Configure logging
 logging.basicConfig(
@@ -297,6 +299,205 @@ class MarketDataManager:
             except Exception as e:
                 logger.error(f"Error generating report: {e}")
                 raise RuntimeError(f"Failed to generate report: {str(e)}")
+    
+    def get_sentiment(self):
+        """
+        Get sentiment analysis data from sentiment_analysis.json file in the cache directory.
+        
+        Returns:
+            dict: Sentiment analysis data or default values if file not found
+        """
+        # Look for sentiment analysis file in cache directory
+        sentiment_file = Path("./cache/sentiment_analysis.json")
+        
+        try:
+            with open(sentiment_file, "r") as f:
+                sentiment_data = json.load(f)
+                return sentiment_data.get('overall_sentiment', {})
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.warning(f"Error loading sentiment data: {e}")
+            # Return default sentiment values
+            return {
+                'valence': 0.5,
+                'arousal': 0.5,
+                'dominance': 0.5,
+                'confidence': 0.5,
+                'financial_sentiment': 0.0
+            }
+    
+    def get_one_word_analysis(self, sentiment):
+        """
+        Get a one-word summary of the sentiment analysis.
+        
+        Args:
+            sentiment (dict): Sentiment data from get_sentiment()
+            
+        Returns:
+            str: One-word summary of sentiment
+        """
+        # Look for sentiment analysis file in cache directory
+        sentiment_file = Path("./cache/sentiment_analysis.json")
+        
+        try:
+            with open(sentiment_file, "r") as f:
+                sentiment_data = json.load(f)
+                return sentiment_data.get('one_word_summary', 'NEUTRAL')
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.warning(f"Error loading sentiment data for one-word analysis: {e}")
+            
+            # Determine sentiment based on valence, arousal, and dominance
+            valence = sentiment.get('valence', 0.5)
+            arousal = sentiment.get('arousal', 0.5)
+            dominance = sentiment.get('dominance', 0.5)
+            
+            # Simple mapping of sentiment values to emotions
+            if valence > 0.67:
+                if arousal > 0.67:
+                    return "EXCITED" if dominance > 0.5 else "HAPPY"
+                else:
+                    return "CONFIDENT" if dominance > 0.5 else "CONTENT"
+            elif valence < 0.33:
+                if arousal > 0.67:
+                    return "ANGRY" if dominance > 0.5 else "FEARFUL"
+                else:
+                    return "DISAPPOINTED" if dominance > 0.5 else "SAD"
+            else:
+                return "NEUTRAL"
+    
+    def get_buy_sell_hold(self, sentiment):
+        """
+        Get a buy/sell/hold recommendation based on sentiment and technical indicators.
+        
+        Args:
+            sentiment (dict): Sentiment data from get_sentiment()
+            
+        Returns:
+            str: Buy, Sell, or Hold recommendation
+        """
+        if self.data is None:
+            return "HOLD"
+        
+        # Get latest technical indicators
+        latest = self.data.iloc[-1]
+        rsi = latest.get('RSI', 50)
+        macd = latest.get('MACD', 0)
+        macd_signal = latest.get('MACD_Signal', 0)
+        
+        # Get sentiment values
+        financial_sentiment = sentiment.get('financial_sentiment', 0)
+        valence = sentiment.get('valence', 0.5)
+        
+        # Combine technical and sentiment signals
+        technical_signal = 0
+        
+        # RSI signals (oversold/overbought)
+        if rsi < 30:
+            technical_signal += 1  # Oversold, bullish
+        elif rsi > 70:
+            technical_signal -= 1  # Overbought, bearish
+            
+        # MACD signals (crossovers)
+        if macd > macd_signal:
+            technical_signal += 1  # Bullish
+        elif macd < macd_signal:
+            technical_signal -= 1  # Bearish
+            
+        # Combine with sentiment
+        sentiment_signal = 0
+        if financial_sentiment > 0.1:
+            sentiment_signal += 1
+        elif financial_sentiment < -0.1:
+            sentiment_signal -= 1
+            
+        if valence > 0.67:
+            sentiment_signal += 1
+        elif valence < 0.33:
+            sentiment_signal -= 1
+            
+        # Final recommendation
+        combined_signal = technical_signal + sentiment_signal
+        
+        if combined_signal >= 2:
+            return "BUY"
+        elif combined_signal <= -2:
+            return "SELL"
+        else:
+            return "HOLD"
+    
+    def get_latest_macd(self):
+        """
+        Get the latest MACD value as a formatted string.
+        
+        Returns:
+            str: Formatted MACD value
+        """
+        if self.data is None:
+            return "MACD: N/A"
+        
+        latest = self.data.iloc[-1]
+        macd = latest.get('MACD', None)
+        
+        if macd is None:
+            return "MACD: N/A"
+        
+        return f"MACD: {macd:.2f}"
+    
+    def get_high(self):
+        """
+        Get the high/low price information as a formatted string.
+        
+        Returns:
+            str: Formatted high/low price information
+        """
+        if self.data is None:
+            return "H/L: N/A"
+        
+        high = self.data['High'].max()
+        
+        return f"Hi: {high:.2f}"
+
+    def get_low(self):
+        """
+        Get the high/low price information as a formatted string.
+        
+        Returns:
+            str: Formatted high/low price information
+        """
+        if self.data is None:
+            return "H/L: N/A"
+        
+        low = self.data['Low'].min()
+        
+        return f"Lo: {low:.2f}"
+        
+    def get_market_outlook(self, sentiment=None):
+        """
+        Get the market outlook as a formatted string based on sentiment analysis.
+        Reads directly from sentiment_analysis.json file in the cache directory.
+        
+        Args:
+            sentiment (dict, optional): Sentiment data from get_sentiment()
+            
+        Returns:
+            str: Formatted market outlook information
+        """
+        if self.data is None:
+            return "Uncertain"
+        
+        # Look for sentiment analysis file in cache directory
+        sentiment_file = Path("./cache/sentiment_analysis.json")
+        
+        try:
+            # Read directly from the sentiment analysis JSON file
+            with open(sentiment_file, "r") as f:
+                sentiment_data = json.load(f)
+                # Get the market outlook from the emotional_summary section
+                market_outlook = sentiment_data.get('emotional_summary', {}).get('market_outlook', 'neutral')
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.warning(f"Error loading sentiment data for market outlook: {e}")
+            market_outlook = "neutral"
+        
+        return f"{market_outlook}"
 
 
 def main():
@@ -331,9 +532,19 @@ def main():
         print("\nGenerated Report:")
         print(report)
         
-        # Create and save plot
-        plot_path = mdm.plot_stock_data(show_plot=args.show_plot)
-        print(f"\nPlot saved to: {plot_path}")
+        # Get sentiment analysis
+        sentiment = mdm.get_sentiment()
+        one_word = mdm.get_one_word_analysis(sentiment)
+        recommendation = mdm.get_buy_sell_hold(sentiment)
+        market_outlook = mdm.get_market_outlook(sentiment)
+
+        print(f"\nSentiment Analysis:")
+        print(f"  One-word summary: {one_word}")
+        print(f"  Recommendation: {recommendation}")
+        print(f"  {mdm.get_latest_macd()}")
+        print(f"  {mdm.get_high()}")
+        print(f"  {mdm.get_low()}")
+        print(f"  {market_outlook}")
         
     except Exception as e:
         logger.error(f"Error in main function: {e}")

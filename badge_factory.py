@@ -23,8 +23,8 @@ History
 Version 1.0 - Cline implementation for Martin East - Based on original requirements for 3D badge generation - Apr 13, 2025.
 Version 2.0 - Martin East - Read, tidy, reduce overall complexity - Apr 15, 2025.
 Version 3.0 - Cline - Enhanced with pyramid feature for all badge types - Apr 21, 2025.
-Version 4.0 - Martin East - Remove unnecessary complexity, read and tidy - Apr 23, 2025.
-
+Version 4.0 - Martin East - Remove unnecessary complexity, read and tidy - Apr 23, 2025
+Version 5.0 - Martin East - Made combined terrain models much simpler and more interesting by overlaying them, also removed terrain-weights, too fiddly - Apr 25, 2025.
 """
 
 # Standard library imports
@@ -182,17 +182,17 @@ class Badge3DModel(ABC):
     
     @abstractmethod
     def generate_terrain(self):
-        """Generate the feature part of the model based on stock data."""
+        """Generate the feature part of 
+        the model based on stock data."""
         pass
     
-    def generate_combined_terrain(self, terrain_types, weights):
+    def generate_combined_terrain(self, terrain_types):
         """
         Generate a combined terrain model from multiple terrain types.
         
         Args:
             terrain_types (list): List of terrain type names
-            weights (list): List of weights for each terrain type
-            
+
         Returns:
             solid.OpenSCADObject: Combined terrain 3D model
         """
@@ -205,14 +205,8 @@ class Badge3DModel(ABC):
         # Generate terrain models for each type
         terrain_models = []
         
-        # Track the maximum dimensions of all terrain models
-        max_width = 0
-        max_depth = 0
-        
         # Generate each terrain model
         for terrain_type in terrain_types:
-            # Store the original terrain type
-            original_terrain_type = self.params.get('terrain_type')
             
             # Set the current terrain type
             self.params['terrain_type'] = terrain_type
@@ -231,105 +225,30 @@ class Badge3DModel(ABC):
                 continue
             
             terrain_models.append(terrain_model)
-            
-            # Restore the original terrain type
-            if original_terrain_type:
-                self.params['terrain_type'] = original_terrain_type
-            else:
-                self.params.pop('terrain_type', None)
-        
-        # If no valid terrain models were generated, return an empty model
-        if not terrain_models:
-            logger.warning("No valid terrain models were generated")
-            return cube([0, 0, 0])
-        
-        # Determine badge dimensions based on badge type
-        if isinstance(self, RectangularBadge):
-            base_width = self.params.get('base_width', 100)
-            base_depth = self.params.get('base_depth', 60)
-            # Use smaller dimension for better proportions
-            max_dim = min(base_width, base_depth) * 0.9
-        elif isinstance(self, TriangularBadge):
-            side_length = self.params.get('side_length', 80)
-            max_dim = side_length * 0.9
-        else:  # DiscBadge or other
-            radius = self.params.get('base_radius', 50)
-            max_dim = radius * 1.8  # Diameter * 0.9
-        
-        # Ensure max_dim doesn't exceed max_size
-        max_dim = min(max_dim, max_size * 0.9)
-        logger.debug(f"Max dimension for terrain models: {max_dim}")
-        
-        # Calculate the size of each terrain section based on weights
-        section_sizes = [max_dim * weight for weight in weights]
-        logger.debug(f"Section sizes for terrain models: {section_sizes}")
-        
-        # Combine the terrain models based on weights
+         
         combined_model = None
         
         # Determine how to arrange the terrain models based on the number of models
         num_models = len(terrain_models)
+
+        combined_parts = []
         
-        if num_models == 1:
-            # Only one terrain model, use it directly
-            combined_model = terrain_models[0]
-        elif num_models == 2:
-            # Two terrain models, split horizontally
-            model1 = scale([section_sizes[0]/max_dim, 1, 1])(terrain_models[0])
-            model2 = scale([section_sizes[1]/max_dim, 1, 1])(terrain_models[1])
+        # arrange multiple models in a circle
+        for i,model in enumerate(terrain_models):
+
+            # Calculate position on the circle
+            angle = 2 * math.pi * i / num_models
+            radius = i/num_models * 0.3  # Position at 30% of max_dim from center
             
-            # Position the models side by side
-            model1 = translate([-max_dim/2 + section_sizes[0]/2, 0, 0])(model1)
-            model2 = translate([max_dim/2 - section_sizes[1]/2, 0, 0])(model2)
+            x = radius * math.cos(angle)
+            y = radius * math.sin(angle)
             
-            combined_model = union()(model1, model2)
-        elif num_models == 3:
-            # Three terrain models, arrange in a triangle
-            model1 = scale([section_sizes[0]/max_dim, section_sizes[0]/max_dim, 1])(terrain_models[0])
-            model2 = scale([section_sizes[1]/max_dim, section_sizes[1]/max_dim, 1])(terrain_models[1])
-            model3 = scale([section_sizes[2]/max_dim, section_sizes[2]/max_dim, 1])(terrain_models[2])
+            # Position the model
+            positioned_model = translate([x, y, 0])(model)
             
-            # Position the models in a triangle
-            model1 = translate([0, max_dim/3, 0])(model1)
-            model2 = translate([-max_dim/3, -max_dim/6, 0])(model2)
-            model3 = translate([max_dim/3, -max_dim/6, 0])(model3)
-            
-            combined_model = union()(model1, model2, model3)
-        elif num_models == 4:
-            # Four terrain models, arrange in a 2x2 grid
-            model1 = scale([section_sizes[0]/max_dim, section_sizes[0]/max_dim, 1])(terrain_models[0])
-            model2 = scale([section_sizes[1]/max_dim, section_sizes[1]/max_dim, 1])(terrain_models[1])
-            model3 = scale([section_sizes[2]/max_dim, section_sizes[2]/max_dim, 1])(terrain_models[2])
-            model4 = scale([section_sizes[3]/max_dim, section_sizes[3]/max_dim, 1])(terrain_models[3])
-            
-            # Position the models in a 2x2 grid
-            model1 = translate([-max_dim/4, max_dim/4, 0])(model1)
-            model2 = translate([max_dim/4, max_dim/4, 0])(model2)
-            model3 = translate([-max_dim/4, -max_dim/4, 0])(model3)
-            model4 = translate([max_dim/4, -max_dim/4, 0])(model4)
-            
-            combined_model = union()(model1, model2, model3, model4)
-        else:
-            # More than 4 terrain models, arrange in a circle
-            combined_parts = []
-            
-            for i, (model, size) in enumerate(zip(terrain_models, section_sizes)):
-                # Scale the model based on its weight
-                scaled_model = scale([size/max_dim, size/max_dim, 1])(model)
-                
-                # Calculate position on the circle
-                angle = 2 * math.pi * i / num_models
-                radius = max_dim * 0.3  # Position at 30% of max_dim from center
-                
-                x = radius * math.cos(angle)
-                y = radius * math.sin(angle)
-                
-                # Position the model
-                positioned_model = translate([x, y, 0])(scaled_model)
-                
-                combined_parts.append(positioned_model)
-            
-            combined_model = union()(*combined_parts)
+            combined_parts.append(positioned_model)
+        
+        combined_model = union()(*combined_parts)
         
         return combined_model
     
@@ -337,34 +256,54 @@ class Badge3DModel(ABC):
         """
         Generate text for the badge. Only limited amount of characters
          possible due to laptop compute and memory resource restrictions.
+        Text is placed on a small rectangular plate underneath the base.
         
         Returns:
-            solid.OpenSCADObject: Text 3D model
+            solid.OpenSCADObject: Text 3D model with supporting plate
         """
-        text_depth = self.params.get('text_depth', 2)
-        text_size = self.params.get('text_size', 10)
+        text_depth = self.params.get('text_depth', 1)  # Reduced depth for better fit
+        text_size = self.params.get('text_size', 8)    # Smaller text size to fit on plate
         text_content = self.params.get('text_content', self.ticker_symbol)
-        text_position = self.params.get('text_position', 'bottom')
+        text_position = self.params.get('text_position', 0)
         
         # We can only add limited text characters owing to 
         # Model complexity. modelling restrictions on laptop compute and memory.
         text_2d = text(text_content, size=text_size, halign='center', valign='center')
-        self.text_model = linear_extrude(height=text_depth)(text_2d)
         
-        # Position the text
-        if text_position == 'bottom':
-            # Position text on the bottom of the badge
-            # For bottom text, we need to position it below the base
-            # The base is at z=0, so we position the text at a negative z value
-            # to make it visible from below
-            z_pos = -text_depth  # Position text below the base
-            self.text_model = translate([0, 0, z_pos])(self.text_model)
-        elif text_position == 'top':
-            # Position text on the top of the badge
-            base_height = self.params.get('base_height', 3)
-            feature_height = self.params.get('feature_height', 2)
-            z_pos = base_height + feature_height
-            self.text_model = translate([0, 0, z_pos])(self.text_model)
+        # Calculate the approximate dimensions of the text for the plate
+        # Add a small margin around the text
+        text_margin = 2
+        text_width = len(text_content) * (text_size*0.9) + text_margin * 2  # Approximate width based on character count
+        text_height = text_size + text_margin * 2
+        plate_thickness = 0.5  # Thin plate
+        
+        # Create a small rectangular plate for the text
+        plate = cube([text_width, text_height, plate_thickness], center=True)
+        
+        # Create the text as a negative space (hole) in the plate
+        # First, create the text as a 3D object
+        text_3d = linear_extrude(height=text_depth)(text_2d)
+        
+        # Mirror the text so it appears correctly when viewed from below
+        mirrored_text = mirror([0, 1, 0])(text_3d)
+        
+        # Position the text on the plate
+        positioned_text = translate([0, 0, -text_depth])(mirrored_text)
+        
+        # Combine the plate and text
+        # The text is positioned to be embedded in the plate
+        text_with_plate = union()(
+            plate,
+            positioned_text
+        )
+        
+        # Position the model underneath the base
+        base_height = self.params.get('base_height', 1)
+        z_pos = text_depth  # Position below the base
+        
+        # Rotate and position the text
+        rotated_model = rotate([0, 0, text_position])(text_with_plate)
+        self.text_model = translate([0,0, 0])(rotated_model)
         
         return self.text_model
     
@@ -572,30 +511,13 @@ class Badge3DModel(ABC):
         """
         Generate a spiral landscape model based on stock data.
         Adapts to fit within the base shape (circular or rectangular).
+        Includes a thin disc at the bottom for stability.
         
         Returns:
             solid.OpenSCADObject: Spiral landscape 3D model
         """
-        # Determine if this is a rectangular badge by checking for base_width and base_depth
-        # and by checking the class name
-        is_rectangular = isinstance(self, RectangularBadge) or (hasattr(self, 'generate_base') and 'base_width' in self.params and 'base_depth' in self.params)
-        
-        # Set radius based on badge type
-        if is_rectangular:
-            # For rectangular badges, use dimensions that fit within the rectangle
-            base_width = self.params.get('base_width', 100)
-            base_depth = self.params.get('base_depth', 60)
-            
-            # Use the smaller dimension (minus margin) to ensure spiral fits within the base
-            # Reduce to 35% to ensure it fits better
-            radius = min(base_width, base_depth) * 0.35
-            
-            # Override spiral_radius if provided
-            radius = self.params.get('spiral_radius', radius)
-        else:
-            # For circular badges, use the default or provided radius
-            radius = self.params.get('spiral_radius', 45)
-        
+        radius = self.params.get('spiral_radius', self.params.get('base_radius', 50) * 0.8)
+        crazy_factor = self.params.get 
         spiral_turns = self.params.get('spiral_turns', 7)
         
         # Generate points on a spiral
@@ -607,18 +529,22 @@ class Badge3DModel(ABC):
         heights = self.data['Close_Normalized']*2
         widths = self.data['Volume_Width']
         
-        # For rectangular badges, scale the cylinder widths to fit better
-        if is_rectangular:
-            # Scale down the cylinder widths for rectangular badges
-            scale_factor = 0.5  # 50% of original width to ensure they fit
-            widths = widths * scale_factor
-        
         # Calculate coordinates
         x = radii * np.cos(angles)  # X coordinates
         y = radii * np.sin(angles)  # Y coordinates
         
         # Create the landscape as a series of cylinders
         landscape = []
+        
+        # Add a thin disc at the bottom for stability
+        disc_thickness = 0.5  # Thin disc (0.5 units thick)
+        disc_radius = radius * 1.1  # Slightly larger than the spiral radius
+        
+        # Create the thin disc and add it to the landscape
+        bottom_disc = cylinder(r=disc_radius, h=disc_thickness, center=False)
+        landscape.append(bottom_disc)
+        
+        # Add the spiral cylinders
         for i in range(num_points):
             cylinder_height = heights.iloc[i]
             cylinder_radius = widths.iloc[i]
@@ -627,26 +553,10 @@ class Badge3DModel(ABC):
             if cylinder_radius < 3:
                 cylinder_radius = 3 
 
-            # For rectangular badges, ensure cylinders don't exceed the base dimensions
-            if is_rectangular:
-                # Ensure x and y coordinates are within the base dimensions
-                max_x = base_width / 2 * 0.9  # 90% of half width to ensure margin
-                max_y = base_depth / 2 * 0.9  # 90% of half depth to ensure margin
-                
-                # Clamp x and y coordinates to ensure they're within the base
-                x_clamped = max(min(x[i], max_x), -max_x)
-                y_clamped = max(min(y[i], max_y), -max_y)
-                
-                landscape.append(
-                    translate([x_clamped, y_clamped, 0])(
-                        cylinder(r=cylinder_radius, h=cylinder_height, center=False)
-                    )
+            landscape.append(
+                translate([x[i], y[i], disc_thickness])(  # Position cylinders on top of the disc
+                    cylinder(r=cylinder_radius, h=cylinder_height, center=False)
                 )
-            else:
-                landscape.append(
-                    translate([x[i], y[i], 0])(
-                        cylinder(r=cylinder_radius, h=cylinder_height, center=False)
-                    )
                 )
         
         # Combine the landscape into a single object
@@ -768,7 +678,7 @@ class Badge3DModel(ABC):
                 
                 cells.append(
                     translate([x_pos, y_pos, 0])(
-                        cube([cell_width * 0.95, cell_depth * 0.95, cell_height])
+                        cube([cell_width, cell_depth, cell_height])
                     )
                 )
         
@@ -776,7 +686,7 @@ class Badge3DModel(ABC):
     
     def save_to_file(self, filename=None):
         """
-        Save the model to an OpenSCAD file.
+        Save the model to an OpenSCAD file in the scad_models directory.
         
         Args:
             filename (str): Output filename
@@ -790,11 +700,21 @@ class Badge3DModel(ABC):
         if filename is None:
             filename = f"{self.ticker_symbol}_badge.scad"
         
-        # Save the model
-        scad_render_to_file(self.final_model, filename)
-        logger.info(f"Model saved to {filename}")
+        # Ensure scad_models directory exists
+        scad_models_dir = Path("./scad_models")
+        scad_models_dir.mkdir(exist_ok=True)
         
-        return filename
+        # Create full path to file in scad_models directory
+        if not str(filename).startswith("./scad_models/"):
+            filepath = scad_models_dir / Path(filename).name
+        else:
+            filepath = filename
+        
+        # Save the model
+        scad_render_to_file(self.final_model, filepath)
+        logger.info(f"Model saved to {filepath}")
+        
+        return str(filepath)
 
 class DiscBadge(Badge3DModel):
     """
@@ -818,10 +738,10 @@ class DiscBadge(Badge3DModel):
         radius = self.params.get('base_radius', 50)
         height = self.params.get('base_height', 1)
     
-        # Take the stock price and make the edge jagged.
         base_radius = self.params.get('base_radius', 50)
         z_offset = 0  # Position the base at z=0, consistent with other badge types
         
+        # For making a jagged edge:
         # Parameters for the polygon
         num_points = len(self.data)  # Use all data points
         angles = np.linspace(0, 2 * np.pi, num_points)  # Angles around the circle
@@ -857,32 +777,11 @@ class DiscBadge(Badge3DModel):
         base_height = self.params.get('base_height', 1)
         
         # Check if multiple terrain types are specified
-        if 'terrain_types' in self.params and 'terrain_weights' in self.params:
-            terrain_types = self.params['terrain_types']
-            weights = self.params['terrain_weights']
+        terrain_types = self.params['terrain_types']
             
-            logger.debug(f"Generating combined disc terrain with types: {terrain_types}")
-            logger.debug(f"Using weights: {weights}")
+        logger.debug(f"Generating combined disc terrain with types: {terrain_types}")
             
-            terrain_model = self.generate_combined_terrain(terrain_types, weights)
-        else:
-            # Single terrain type
-            terrain_type = self.params.get('terrain_type', 'spiral_chart')
-            
-            logger.debug(f"Generating disc terrain with base height={base_height}")
-            logger.debug(f"Terrain type: {terrain_type}")
-            
-            if terrain_type == 'spiral_chart':
-                terrain_model = self.generate_spiral_chart()
-            elif terrain_type == 'bar_chart':
-                terrain_model = self.generate_bar_chart()
-            elif terrain_type == 'pyramid':
-                terrain_model = self.generate_pyramid()
-            elif terrain_type == 'surface_plot':
-                terrain_model = self.generate_surface_plot()
-            else:
-                logger.warning(f"Unknown terrain type: {terrain_type}, using spiral_chart")
-                terrain_model = self.generate_spiral_chart()
+        terrain_model = self.generate_combined_terrain(terrain_types)
         
         # Apply z-offset to the terrain model
         self.terrain_model = translate([0, 0, base_height])(terrain_model)
@@ -987,15 +886,13 @@ class RectangularBadge(Badge3DModel):
         logger.debug(f"Generating terrain with base dimensions: width={base_width}, depth={base_depth}, height={base_height}")
         
         # Check if multiple terrain types are specified
-        if 'terrain_types' in self.params and 'terrain_weights' in self.params:
+        if 'terrain_types' in self.params:
             terrain_types = self.params['terrain_types']
-            weights = self.params['terrain_weights']
             
             logger.debug(f"Generating combined rectangular terrain with types: {terrain_types}")
-            logger.debug(f"Using weights: {weights}")
             
             # Generate combined terrain model
-            terrain_model = self.generate_combined_terrain(terrain_types, weights)
+            terrain_model = self.generate_combined_terrain(terrain_types)
         else:
             # Single terrain type
             terrain_type = self.params.get('terrain_type', 'bar_chart')
@@ -1151,15 +1048,13 @@ class TriangularBadge(Badge3DModel):
         base_height = self.params.get('base_height', 3)
         
         # Check if multiple terrain types are specified
-        if 'terrain_types' in self.params and 'terrain_weights' in self.params:
+        if 'terrain_types' in self.params:
             terrain_types = self.params['terrain_types']
-            weights = self.params['terrain_weights']
             
             logger.debug(f"Generating combined triangular terrain with types: {terrain_types}")
-            logger.debug(f"Using weights: {weights}")
             
             # Generate combined terrain model
-            terrain_model = self.generate_combined_terrain(terrain_types, weights)
+            terrain_model = self.generate_combined_terrain(terrain_types)
         else:
             # Single terrain type
             terrain_type = self.params.get('terrain_type', 'pyramid')
@@ -1326,7 +1221,6 @@ def main():
     parser.add_argument('--badge-type', type=str, default='disc', 
                        choices=['disc', 'rectangular', 'triangular'], help='Badge type')
     parser.add_argument('--terrain-types', type=str, help='Comma-separated list of terrain types to combine (spiral_chart, bar_chart, pyramid)')
-    parser.add_argument('--terrain-weights', type=str, help='Optional comma-separated list of weights for each terrain type (e.g., 0.5,0.3,0.2)')
     parser.add_argument('--output', type=str, help='Output file name')
     parser.add_argument('--verbose', action='store_true', help='Enable verbose (INFO) logging')
     args = parser.parse_args()
@@ -1347,26 +1241,7 @@ def main():
         if args.terrain_types:
             terrain_types = [t.strip() for t in args.terrain_types.split(',')]
             params['terrain_types'] = terrain_types
-            
-            # Handle terrain weights if provided
-            if args.terrain_weights:
-                weights = [float(w.strip()) for w in args.terrain_weights.split(',')]
-                
-                # Ensure we have the same number of weights as terrain types
-                if len(weights) != len(terrain_types):
-                    logger.warning(f"Number of weights ({len(weights)}) doesn't match number of terrain types ({len(terrain_types)}). Using equal weights.")
-                    weights = [1.0/len(terrain_types)] * len(terrain_types)
-                else:
-                    # Normalize weights to sum to 1
-                    total = sum(weights)
-                    weights = [w/total for w in weights]
-                
-                params['terrain_weights'] = weights
-            else:
-                # Equal weights if not specified
-                params['terrain_weights'] = [1.0/len(terrain_types)] * len(terrain_types)
-                
-            logger.debug(f"Using terrain types: {terrain_types} with weights: {params['terrain_weights']}")
+            logger.debug(f"Using terrain types: {terrain_types}")
         elif args.terrain_type:
             # For backward compatibility
             params['terrain_type'] = args.terrain_type

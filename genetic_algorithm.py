@@ -28,7 +28,6 @@ import pandas as pd
 import pygad
 from pathlib import Path
 
-
 # Import improved modules
 from improved_cli import CrazyStockBadgeCLI
 from improved_market_data import MarketDataManager
@@ -46,11 +45,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger('genetic_algorithm')
 
-
 # Global variables for pyGAD fitness function
 stock_data = None
 ticker_symbol = None
-
 
 def create_gene_space():
     """

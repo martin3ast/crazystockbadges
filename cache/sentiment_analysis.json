@@ -1,0 +1,316 @@
+{
+  "overall_sentiment": {
+    "valence": 0.6764893617021277,
+    "arousal": 0.47253191489361696,
+    "dominance": 0.5889680851063831,
+    "confidence": 1.0,
+    "financial_sentiment": 0.03164556962025317,
+    "coverage": 0.5949367088607594,
+    "total_words": 158,
+    "matched_words": 94,
+    "hedging_words": 0,
+    "financial_positive": 7,
+    "financial_negative": 2
+  },
+  "emotional_summary": {
+    "emotional_tone": "positive and moderate",
+    "power_dynamic": "neutral",
+    "certainty": "very confident",
+    "market_outlook": "neutral",
+    "primary_emotion": "content"
+  },
+  "key_terms": {
+    "positive_terms": [
+      "extraordinary",
+      "success",
+      "innovation",
+      "health",
+      "fun",
+      "new",
+      "journey",
+      "company",
+      "live",
+      "innovative"
+    ],
+    "negative_terms": [
+      "week",
+      "technical",
+      "past",
+      "way",
+      "price",
+      "neutral",
+      "division",
+      "low",
+      "volatility",
+      "crazy"
+    ],
+    "high_arousal_terms": [
+      "success",
+      "crazy",
+      "fun",
+      "giant",
+      "launch",
+      "show",
+      "volatility",
+      "extraordinary",
+      "journey",
+      "leading"
+    ],
+    "high_dominance_terms": [
+      "success",
+      "giant",
+      "leading",
+      "innovation",
+      "highlight",
+      "extraordinary",
+      "strength",
+      "revenue",
+      "potential",
+      "industry"
+    ]
+  },
+  "one_word_summary": "CONTENT",
+  "sentence_analysis": [
+    {
+      "sentence": "Crazy Badge here, bringing you the latest on the tech giant, Apple Inc. (AAPL)!",
+      "sentiment": {
+        "valence": 0.5728,
+        "arousal": 0.5871999999999999,
+        "dominance": 0.5942000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5555555555555556,
+        "total_words": 9,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "This company needs no introduction, as it has revolutionized the way we live with its innovative products and services.",
+      "sentiment": {
+        "valence": 0.7516,
+        "arousal": 0.4852,
+        "dominance": 0.6728000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.1111111111111111,
+        "coverage": 0.5555555555555556,
+        "total_words": 9,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Apple's stock is currently trading at $209.28, with a 52-week high of $259.81 and a low of $168.32.",
+      "sentiment": {
+        "valence": 0.5429999999999999,
+        "arousal": 0.3962,
+        "dominance": 0.43579999999999997,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.7142857142857143,
+        "total_words": 7,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Over the past year, the price has changed by 24.20%, reflecting the company's resilience in the face of market volatility.",
+      "sentiment": {
+        "valence": 0.5335555555555556,
+        "arousal": 0.4235555555555555,
+        "dominance": 0.49077777777777776,
+        "confidence": 1.0,
+        "financial_sentiment": -0.1,
+        "coverage": 0.9,
+        "total_words": 10,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "The latest MACD value of -3.87 indicates a bearish trend, while the RSI of 51.96 suggests a neutral position.",
+      "sentiment": {
+        "valence": 0.6188,
+        "arousal": 0.4448,
+        "dominance": 0.5454000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": -0.1,
+        "coverage": 0.5,
+        "total_words": 10,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "These technical indicators highlight the current sentiment surrounding AAPL's stock.",
+      "sentiment": {
+        "valence": 0.6448333333333334,
+        "arousal": 0.45500000000000007,
+        "dominance": 0.6575,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.75,
+        "total_words": 8,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Despite recent challenges in the global market, Apple continues to show strength in its core business segments, including the iPhone, iPad, and Mac.",
+      "sentiment": {
+        "valence": 0.6993333333333333,
+        "arousal": 0.49366666666666664,
+        "dominance": 0.6085555555555555,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0625,
+        "coverage": 0.5625,
+        "total_words": 16,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The company's growing services division, which includes Apple Music, iCloud, and the App Store, has also been a significant revenue driver.",
+      "sentiment": {
+        "valence": 0.7018571428571428,
+        "arousal": 0.5112857142857142,
+        "dominance": 0.5750000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.14285714285714285,
+        "coverage": 0.5,
+        "total_words": 14,
+        "matched_words": 7,
+        "hedging_words": 0,
+        "financial_positive": 2,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Fun fact: Did you know that Apple was founded on April 1, 1976, by Steve Jobs, Steve Wozniak, and Ronald Wayne in a garage?",
+      "sentiment": {
+        "valence": 0.7416,
+        "arousal": 0.42400000000000004,
+        "dominance": 0.5416000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.38461538461538464,
+        "total_words": 13,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Talk about humble beginnings leading to extraordinary success!",
+      "sentiment": {
+        "valence": 0.8813333333333332,
+        "arousal": 0.5691666666666667,
+        "dominance": 0.7453333333333334,
+        "confidence": 1.0,
+        "financial_sentiment": 0.16666666666666666,
+        "coverage": 1.0,
+        "total_words": 6,
+        "matched_words": 6,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Looking ahead, investors are eagerly anticipating the launch of new iPhone models, potential developments in the wearables market, and Apple's expanding presence in the healthcare industry with services like Apple Health.",
+      "sentiment": {
+        "valence": 0.7825454545454545,
+        "arousal": 0.47990909090909084,
+        "dominance": 0.5952727272727273,
+        "confidence": 1.0,
+        "financial_sentiment": 0.045454545454545456,
+        "coverage": 0.5,
+        "total_words": 22,
+        "matched_words": 11,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The company's focus on sustainability and environmental initiatives also continues to resonate with consumers and investors alike.",
+      "sentiment": {
+        "valence": 0.6395,
+        "arousal": 0.36950000000000005,
+        "dominance": 0.6,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.36363636363636365,
+        "total_words": 11,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "In conclusion, Apple remains a cornerstone of technological innovation and a key player in the global market.",
+      "sentiment": {
+        "valence": 0.6694000000000001,
+        "arousal": 0.44000000000000006,
+        "dominance": 0.6186,
+        "confidence": 1.0,
+        "financial_sentiment": 0.1,
+        "coverage": 1.0,
+        "total_words": 10,
+        "matched_words": 10,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Stay tuned for more updates on AAPL as we follow its journey to new heights!",
+      "sentiment": {
+        "valence": 0.7745,
+        "arousal": 0.494,
+        "dominance": 0.58075,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5,
+        "total_words": 8,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "This is Crazy Badge signing off, until next time!",
+      "sentiment": {
+        "valence": 0.4423333333333333,
+        "arousal": 0.5396666666666666,
+        "dominance": 0.5403333333333333,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6,
+        "total_words": 5,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    }
+  ],
+  "success": true
+}
