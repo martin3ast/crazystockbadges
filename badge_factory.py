@@ -41,11 +41,7 @@ import pandas as pd
 from solid import *
 from solid.utils import *
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Get logger
 logger = logging.getLogger('badge_factory')
 
 
@@ -517,7 +513,9 @@ class Badge3DModel(ABC):
             solid.OpenSCADObject: Spiral landscape 3D model
         """
         radius = self.params.get('spiral_radius', self.params.get('base_radius', 50) * 0.8)
-        crazy_factor = self.params.get 
+        # Generate a random factor between 0 and 2.0 that affects the terrain
+        # 0.0 = empty model, 1.0 = normal model, 2.0 = complex/exaggerated model
+        random_factor = random.uniform(0.0, 2.0)
         spiral_turns = self.params.get('spiral_turns', 7)
         
         # Generate points on a spiral
@@ -525,9 +523,12 @@ class Badge3DModel(ABC):
         angles = np.linspace(0, spiral_turns * 2 * np.pi, num_points)  # Spiral angles
         radii = np.linspace(0, radius, num_points)  # Gradually increase radius for spiral
         
-        # Map normalized stock prices to heights and widths
-        heights = self.data['Close_Normalized']*2
-        widths = self.data['Volume_Width']
+        # Map normalized stock prices to heights and widths, affected by random_factor
+        # When random_factor is 0, heights will be minimal
+        # When random_factor is 1, heights will be normal
+        # When random_factor is 2, heights will be doubled
+        heights = self.data['Close_Normalized'] * 2 * random_factor
+        widths = self.data['Volume_Width'] * random_factor
         
         # Calculate coordinates
         x = radii * np.cos(angles)  # X coordinates
@@ -566,10 +567,16 @@ class Badge3DModel(ABC):
         """
         Generate a bar chart model based on stock prices.
         Adapts to the badge shape (circular, rectangular, or triangular).
+        Includes a thin plate at the bottom for stability that covers all bar chart extremities.
         
         Returns:
             solid.OpenSCADObject: Bar chart 3D model
         """
+        # Generate a random factor between 0 and 2.0 that affects the terrain
+        # 0.0 = empty model, 1.0 = normal model, 2.0 = complex/exaggerated model
+        random_factor = random.uniform(0.0, 2.0)
+        plate_thickness = 0.5  # Thin plate (0.5 units thick)
+        
         # Determine badge type and set appropriate dimensions
         if isinstance(self, DiscBadge):
             # For disc badges, create a circular arrangement of bars
@@ -577,17 +584,47 @@ class Badge3DModel(ABC):
             num_points = len(self.data)
             angles = np.linspace(0, 2 * np.pi, num_points)
             
-            # Create bars in a circular arrangement
+            # Create bars in a circular arrangement and track the maximum distance from center
             bars = []
+            max_distance = 0
+            
             for i in range(num_points):
-                bar_height = self.data['Close_Normalized'].iloc[i] * 2
-                bar_width = 2 * np.pi * radius / num_points * 0.7  # Width as a fraction of circumference
-                bar_depth = radius * 0.3  # Depth as a fraction of radius
+                # Apply random_factor to bar height
+                bar_height = self.data['Close_Normalized'].iloc[i] * 2 * random_factor
+                # Apply random_factor to bar dimensions
+                bar_width = 2 * np.pi * radius / num_points * 0.7 * max(0.2, random_factor)  # Width as a fraction of circumference
+                bar_depth = radius * 0.3 * max(0.2, random_factor)  # Depth as a fraction of radius
                 
                 # Calculate position on the circle
                 angle = angles[i]
                 x_pos = radius * 0.7 * np.cos(angle)  # Position at 70% of radius
                 y_pos = radius * 0.7 * np.sin(angle)
+                
+                # Calculate the distance from center to the furthest point of this bar
+                # The furthest point is at the corner of the bar furthest from the center
+                # We need to account for the bar's rotation and dimensions
+                
+                # Calculate the corners of the bar before rotation
+                corners = [
+                    [0, 0],  # Near corner
+                    [bar_depth, 0],  # Far corner along depth
+                    [0, bar_width],  # Far corner along width
+                    [bar_depth, bar_width]  # Far corner diagonally
+                ]
+                
+                # Rotate the corners and find the maximum distance
+                for corner in corners:
+                    # Rotate the corner
+                    rotated_x = corner[0] * math.cos(angle) - corner[1] * math.sin(angle)
+                    rotated_y = corner[0] * math.sin(angle) + corner[1] * math.cos(angle)
+                    
+                    # Add the position offset
+                    corner_x = x_pos + rotated_x
+                    corner_y = y_pos + rotated_y
+                    
+                    # Calculate distance from center
+                    distance = math.sqrt(corner_x**2 + corner_y**2)
+                    max_distance = max(max_distance, distance)
                 
                 # Rotate the bar to point outward from center
                 bars.append(
@@ -598,56 +635,122 @@ class Badge3DModel(ABC):
                     )
                 )
             
-            return union()(bars)
+            # Create the combined bars model
+            bars_model = union()(bars)
+            
+            # Add a thin disc at the bottom for stability
+            # Use the calculated maximum distance to ensure the plate covers all bars
+            # Add a 10% margin to ensure complete coverage
+            plate_radius = max_distance * 1.1
+            bottom_plate = cylinder(r=plate_radius, h=plate_thickness, center=False)
+            
+            # Combine the plate and bars
+            return union()([
+                bottom_plate,
+                translate([0, 0, plate_thickness])(bars_model)
+            ])
         else:
             # For rectangular and triangular badges
             base_width = self.params.get('base_width', 100)
             base_depth = self.params.get('base_depth', 60)
             bar_width = base_width / len(self.data)
             
-            # Create bars for each data point, double the max height (normalized)
-            # to make them more visible and look better
+            # Create bars for each data point and track the actual dimensions
             bars = []
+            min_x = float('inf')
+            max_x = float('-inf')
+            min_y = float('inf')
+            max_y = float('-inf')
+            
             for i in range(len(self.data)):
-                # Bar height should be the normalized value
-                bar_height = self.data['Close_Normalized'].iloc[i] * 2
-                bar_depth = base_depth * 0.7  # Make bars slightly narrower than the base
+                # Apply random_factor to bar height
+                bar_height = self.data['Close_Normalized'].iloc[i] * 2 * random_factor
+                bar_depth = base_depth * 0.7 * max(0.2, random_factor)  # Make bars slightly narrower than the base
                 
                 # Position each bar along the x-axis
                 x_pos = i * bar_width
                 y_pos = (base_depth - bar_depth) / 2  # Center bars on the y-axis
                 
+                # Calculate the actual dimensions of this bar
+                bar_min_x = x_pos
+                bar_max_x = x_pos + bar_width * 0.9 * max(0.2, random_factor)
+                bar_min_y = y_pos
+                bar_max_y = y_pos + bar_depth
+                
+                # Update the overall min/max coordinates
+                min_x = min(min_x, bar_min_x)
+                max_x = max(max_x, bar_max_x)
+                min_y = min(min_y, bar_min_y)
+                max_y = max(max_y, bar_max_y)
+                
                 bars.append(
                     translate([x_pos, y_pos, 0])(
-                        cube([bar_width * 0.9, bar_depth, bar_height])
+                        cube([bar_width * 0.9 * max(0.2, random_factor), bar_depth, bar_height])
                     )
                 )
             
-            # Translate the finished bar model to zero point
-            # and combine them into a single object
-            for i in range(len(bars)):
-                bars[i] = translate([-base_width/2, -base_depth/2, 0])(bars[i])
+            # Calculate the actual width and depth of the bar chart
+            actual_width = max_x - min_x
+            actual_depth = max_y - min_y
             
-            return union()(bars)
+            # Translate the bars to center them at the origin
+            centered_bars = []
+            for bar in bars:
+                centered_bars.append(translate([-base_width/2, -base_depth/2, 0])(bar))
+            
+            # Create the combined bars model
+            bars_model = union()(centered_bars)
+            
+            # Add a thin plate at the bottom for stability
+            # Use the calculated actual dimensions to ensure the plate covers all bars
+            # Add a 10% margin to ensure complete coverage
+            plate_width = actual_width * 1.1
+            plate_depth = actual_depth * 1.1
+            
+            # Create the thin plate centered at the origin
+            # Adjust the position to account for the actual center of the bar chart
+            plate_center_x = (min_x + max_x) / 2 - base_width / 2
+            plate_center_y = (min_y + max_y) / 2 - base_depth / 2
+            
+            bottom_plate = translate([plate_center_x - plate_width/2, plate_center_y - plate_depth/2, 0])(
+                cube([plate_width, plate_depth, plate_thickness])
+            )
+            
+            # Combine the plate and bars
+            return union()([
+                bottom_plate,
+                translate([0, 0, plate_thickness])(bars_model)
+            ])
     
     def generate_surface_plot(self):
         """
         Generate a surface plot model based on stock data.
+        Includes a thin plate at the bottom for stability.
         
         Returns:
             solid.OpenSCADObject: Surface plot 3D model
         """
+        # Generate a random factor between 0 and 2.0 that affects the terrain
+        # 0.0 = empty model, 1.0 = normal model, 2.0 = complex/exaggerated model
+        random_factor = random.uniform(0.0, 2.0)
+        
         base_width = self.params.get('base_width', 100)
         base_depth = self.params.get('base_depth', 60)
         
         # Create a grid of points
-        grid_size = int(math.sqrt(len(self.data)))
-        if grid_size < 2:
-            grid_size = 2
+        # Apply random_factor to grid size for more/less complexity
+        base_grid_size = int(math.sqrt(len(self.data)))
+        if random_factor > 1.0:
+            # More complex grid for higher random factors
+            grid_size = max(2, int(base_grid_size * (1 + (random_factor - 1) * 0.5)))
+        else:
+            # Simpler grid for lower random factors
+            grid_size = max(2, int(base_grid_size * random_factor))
         
         # Truncate data to fit grid
         data_points = min(grid_size * grid_size, len(self.data))
-        heights = self.data['Close_Normalized'].iloc[:data_points].values
+        # Apply random_factor to heights
+        heights = self.data['Close_Normalized'].iloc[:data_points].values * random_factor
         
         # Reshape to grid
         try:
@@ -668,6 +771,17 @@ class Badge3DModel(ABC):
         
         # Create cells for the surface
         cells = []
+        
+        # Add a thin plate at the bottom for stability
+        plate_thickness = 0.5  # Thin plate (0.5 units thick)
+        plate_width = base_width * 1.1  # Slightly larger than the surface width
+        plate_depth = base_depth * 1.1  # Slightly larger than the surface depth
+        
+        # Create the thin plate and add it to the cells
+        bottom_plate = translate([-plate_width/2, -plate_depth/2, 0])(
+            cube([plate_width, plate_depth, plate_thickness])
+        )
+        cells.append(bottom_plate)
         for i in range(grid_size):
             for j in range(grid_size):
                 cell_height = height_grid[i, j]
@@ -676,9 +790,16 @@ class Badge3DModel(ABC):
                 x_pos = i * cell_width - x_center
                 y_pos = j * cell_depth - y_center
                 
+                # Apply random_factor to cell dimensions
+                # When random_factor is close to 0, cells will be very small or non-existent
+                # When random_factor is 1, cells will be normal size
+                # When random_factor is 2, cells will be more varied and potentially larger
+                cell_width_factor = max(0.1, random_factor * (0.8 + 0.4 * random.random()))
+                cell_depth_factor = max(0.1, random_factor * (0.8 + 0.4 * random.random()))
+                
                 cells.append(
                     translate([x_pos, y_pos, 0])(
-                        cube([cell_width, cell_depth, cell_height])
+                        cube([cell_width * cell_width_factor, cell_depth * cell_depth_factor, cell_height])
                     )
                 )
         
@@ -779,8 +900,6 @@ class DiscBadge(Badge3DModel):
         # Check if multiple terrain types are specified
         terrain_types = self.params['terrain_types']
             
-        logger.debug(f"Generating combined disc terrain with types: {terrain_types}")
-            
         terrain_model = self.generate_combined_terrain(terrain_types)
         
         # Apply z-offset to the terrain model
@@ -810,13 +929,11 @@ class RectangularBadge(Badge3DModel):
         depth = self.params.get('base_depth', 60)
         height = self.params.get('base_height', 1)
         z_offset = 0
-        
-        logger.debug(f"Base width: {width}, depth: {depth}, height: {height}")
-        
+
         # Number of points to use on each side of the rectangle
         # Distribute the data points around the perimeter
         num_points = len(self.data)
-        logger.debug(f"Number of data points: {num_points}")
+
         points_per_side = num_points // 4  # Distribute points across 4 sides
         
         points = []
@@ -882,21 +999,15 @@ class RectangularBadge(Badge3DModel):
         base_width = self.params.get('base_width', 100)
         base_depth = self.params.get('base_depth', 60)
         
-        # Log dimensions for debugging
-        logger.debug(f"Generating terrain with base dimensions: width={base_width}, depth={base_depth}, height={base_height}")
-        
         # Check if multiple terrain types are specified
         if 'terrain_types' in self.params:
             terrain_types = self.params['terrain_types']
-            
-            logger.debug(f"Generating combined rectangular terrain with types: {terrain_types}")
             
             # Generate combined terrain model
             terrain_model = self.generate_combined_terrain(terrain_types)
         else:
             # Single terrain type
             terrain_type = self.params.get('terrain_type', 'bar_chart')
-            logger.debug(f"Terrain type: {terrain_type}")
             
             if terrain_type == 'spiral_chart':
                 # Pass base dimensions to ensure spiral fits within the base
@@ -1051,8 +1162,6 @@ class TriangularBadge(Badge3DModel):
         if 'terrain_types' in self.params:
             terrain_types = self.params['terrain_types']
             
-            logger.debug(f"Generating combined triangular terrain with types: {terrain_types}")
-            
             # Generate combined terrain model
             terrain_model = self.generate_combined_terrain(terrain_types)
         else:
@@ -1181,7 +1290,7 @@ class BadgeFactory:
     """
     
     @staticmethod
-    def create_badge(badge_type, stock_data, ticker_symbol, params=None, verbose=False):
+    def create_badge(badge_type, stock_data, ticker_symbol, params=None):
         """
         Create a badge of the specified type.
         
@@ -1190,14 +1299,10 @@ class BadgeFactory:
             stock_data (pandas.DataFrame): Stock data
             ticker_symbol (str): Stock ticker symbol
             params (dict): Additional parameters for the badge
-            verbose (bool): Whether to enable verbose (INFO) logging
             
         Returns:
             Badge3DModel: Badge model instance
         """
-        # Set logger level based on verbose flag
-        log_level = logging.INFO if verbose else logging.WARN
-        logger.setLevel(log_level)
         if badge_type == 'disc':
             return DiscBadge(stock_data, ticker_symbol, params)
         elif badge_type == 'rectangular':
@@ -1241,17 +1346,16 @@ def main():
         if args.terrain_types:
             terrain_types = [t.strip() for t in args.terrain_types.split(',')]
             params['terrain_types'] = terrain_types
-            logger.debug(f"Using terrain types: {terrain_types}")
-        elif args.terrain_type:
-            # For backward compatibility
-            params['terrain_type'] = args.terrain_type
+       # elif args.terrain_type:
+       #     # For backward compatibility
+      #      params['terrain_type'] = args.terrain_type
         
         # Set logger level based on verbose flag
         log_level = logging.INFO if args.verbose else logging.WARN
         logger.setLevel(log_level)
         
         # Create the badge
-        badge = BadgeFactory.create_badge(args.badge_type, stock_data, args.ticker, params, verbose=args.verbose)
+        badge = BadgeFactory.create_badge(args.badge_type, stock_data, args.ticker, params)
 
         # Save the model
         output_file = args.output or f"{args.ticker}_{args.badge_type}_badge.scad"

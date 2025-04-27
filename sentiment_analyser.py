@@ -21,25 +21,33 @@ import re
 import json
 from collections import Counter
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Get logger
 logger = logging.getLogger('improved_sentiment')
 
 # Default paths
 DEFAULT_LEXICON_PATH = './NRC-VAD-Lexicon/NRC-VAD-Lexicon.txt'
 DEFAULT_REPORT_PATH = './stock_report'
 
-# Ensure NLTK data is downloaded
+# Ensure NLTK data is available
+from nltk.data import find
+
+# Check for punkt
 try:
+    find('tokenizers/punkt')
+    logger.info("NLTK punkt tokenizer found locally")
+except LookupError:
+    logger.info("NLTK punkt tokenizer not found locally, downloading...")
     download('punkt', quiet=True)
+    logger.info("NLTK punkt tokenizer downloaded successfully")
+
+# Check for stopwords
+try:
+    find('corpora/stopwords')
+    logger.info("NLTK stopwords found locally")
+except LookupError:
+    logger.info("NLTK stopwords not found locally, downloading...")
     download('stopwords', quiet=True)
-    logger.info("NLTK resources downloaded successfully")
-except Exception as e:
-    logger.warning(f"Error downloading NLTK resources: {e}")
-    logger.warning("Some functionality may be limited")
+    logger.info("NLTK stopwords downloaded successfully")
 
 
 class SentimentAnalyzer:

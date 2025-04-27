@@ -62,22 +62,35 @@ class CrazyStockBadge:
                            help='Skip generating and displaying the stock report')
         self.parser.add_argument('--ga-generations', type=int, default=10,
                            help='Number of generations for the genetic algorithm (default: 10)')
-        self.parser.add_argument('--verbose', action='store_true',
-                           help='Enable verbose (INFO) logging')
+        self.parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], 
+                           default='INFO', help='Set logging level (default: INFO)')
         
         # Parse the arguments
         self.args = self.parser.parse_args()
         
         # Configure logging
-        log_level = logging.INFO if self.args.verbose else logging.WARN
-        logging.basicConfig(
-            level=log_level,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler("crazystockbadges.log"),
-                logging.StreamHandler(sys.stdout)
-            ]
-        )
+        log_level = getattr(logging, self.args.log_level)
+            
+        # Get the root logger and clear any existing handlers
+        logger = logging.getLogger()
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+        
+        # Set the root logger level
+        logger.setLevel(log_level)
+        
+        # Set up handlers - always log to both file and stdout
+        file_handler = logging.FileHandler("crazystockbadges.log", mode='w')
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        logger.addHandler(file_handler)
+        
+        # Add stdout handler - always log to stdout
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(log_level)
+        stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+        logger.addHandler(stdout_handler)
+            
         self.logger = logging.getLogger('crazystockbadges')
 
         # Set default values or from command line arguments.
@@ -227,7 +240,7 @@ class CrazyStockBadge:
         self.logger.info(f"Running genetic algorithm for {self.ga_generations} generations")
         self.ga_instance.run()
         
-        # Get the best solution
+        # Get the best solution according to PyGAD
         solution, solution_fitness, solution_idx = self.ga_instance.best_solution()
         self.logger.info(f"Best solution (individual {solution_idx}) found with fitness: {solution_fitness:.2f}")
         
@@ -413,11 +426,12 @@ class CrazyStockBadge:
         Version 3.2: Martin East - Modifying weights for fitness - Apr 25, 2025.
         Version 3.3: Cline - Fixed fitness function to return proper values for all solutions - Apr 26, 2025.
         Version 3.4: Cline - Modified to use raw metric values with weights instead of normalization - Apr 26, 2025.
+        Version 3.5: Martin East - Added debug logging for fitness function, removed node vs complexity weighting (both 1 now) - Apr 27, 2025.
         """
         params = self.genes_to_badge_params(solution)
 
         # Create the badge using the parameters
-        badge = BadgeFactory.create_badge(params['badge_type'], self.mdm.data, self.ticker, params, verbose=self.args.verbose)
+        badge = BadgeFactory.create_badge(params['badge_type'], self.mdm.data, self.ticker, params)
         
         # Ensure the badge's model components are generated
         badge.generate_base()
@@ -442,7 +456,7 @@ class CrazyStockBadge:
             'complexity_score'
         ]
         
-        # Assign weights to the metrics
+        # Assign weights to the metrics, they are now even!
         weights = {
             'total_nodes': 1,
             'complexity_score': 1 
@@ -457,14 +471,6 @@ class CrazyStockBadge:
         # Print detailed information about this solution
         self.logger.debug(f"Solution {solution_idx}: Fitness = {fitness:.2f}, Total nodes = {report['total_nodes']}, Complexity score = {report['complexity_score']:.2f}")
         self.logger.debug(f"Parameters: {', '.join([f'{k}: {v}' for k, v in badge.params.items()])}")
-        self.logger.debug(f"Terrain types: {', '.join(badge.params['terrain_types'])}")
-        self.logger.debug(f"Text content: {badge.params['text_content']}")
-        self.logger.debug(f"Text position: {badge.params['text_position']}")
-        self.logger.debug(f"Text size: {badge.params['text_size']}")
-        self.logger.debug(f"Text depth: {badge.params['text_depth']}")
-        self.logger.debug(f"Spiral turns: {badge.params['spiral_turns']}")
-        self.logger.debug(f"Badge type: {badge.params['badge_type']}")
-
     
         # Return the calculated fitness value
         return fitness
@@ -475,34 +481,42 @@ class CrazyStockBadge:
         
         Attribution: Cline implementation for Martin East - Generation callback - Apr 17, 2025
         Version 2.0: Cline implementation for Martin East - Added SCAD model generation for fittest individual - Apr 27, 2025
+        Version 2.1: Martin East - Added debug logging for generation callback, write out interim fittest models for debug - Apr 27, 2025.
+        Version 2.2: Cline - Added debug flag to control generation printing - Apr 27, 2025.
+        Version 2.3: Cline - Added detailed debugging for fitness discrepancy - Apr 27, 2025.
         
         Args:
             ga_instance: The genetic algorithm instance
         """
         best_solution, best_fitness, solution_idx = ga_instance.best_solution()
-        
-        best_badge, _, _ = ga_instance.badges[solution_idx]
+
+        # Get the best badge from ga_instance.badges
+        best_badge = ga_instance.badges[solution_idx][0]
         params = best_badge.params
         
-        print(f"Generation {ga_instance.generations_completed}: Solution #{solution_idx}, Fitness = {best_fitness:.2f}")
-        print(f"Parameters: Badge Type = {params['badge_type']}, Terrain Types = {params['terrain_types']}")
-        print(f"Text Content = '{params['text_content']}', Text Position = {params['text_position']:.2f}°")
-        print("-" * 80)
+        # Only print generation details if log level is DEBUG
+        if self.args.log_level == 'DEBUG':
+            # Get the best badge from ga_instance.badges
+            best_badge = ga_instance.badges[solution_idx][0]
+            
+            # Ensure scad_models directory exists
+            os.makedirs("./scad_models", exist_ok=True)
+            self.logger.debug(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
+            self.logger.debug(f"Parameters: Badge Type = {params['badge_type']}, Terrain Types = {params['terrain_types']}")
+            self.logger.debug(f"Text Content = '{params['text_content']}', Text Position = {params['text_position']:.2f}°")
         
-        # Create a SCAD model for the fittest individual in each generation
-        generation_num = ga_instance.generations_completed
-        output_file = f"./scad_models/{self.ticker}_gen{generation_num}_badge.scad"
+            # Create a SCAD model for the fittest individual in each generation
+            generation_num = ga_instance.generations_completed
+            output_file = f"./scad_models/{self.ticker}_gen{generation_num}_badge.scad"
         
-        # Ensure scad_models directory exists
-        os.makedirs("./scad_models", exist_ok=True)
-        
-        # Save the model to file
-        best_badge.save_to_file(output_file)
-        self.logger.info(f"Generation {generation_num}: Saved best model to {output_file}")
+
+            # Save the model to file
+            best_badge.save_to_file(output_file)
+            self.logger.info(f"Generation {generation_num}: Saved this generation's best model to {output_file}")
         
         if ga_instance.generations_completed % 10 == 0:
-            best_solution, best_fitness, _ = ga_instance.best_solution()
-            self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness (maximised) = {best_fitness:.2f}")
+            # Log the best solution according to PyGAD
+            self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
 
 
     def _create_gene_space(self):

@@ -23,16 +23,12 @@ from pathlib import Path
 import sys
 from sentiment_analyser import SentimentAnalyzer
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('improved_market_data')
+# Get logger
+logger = logging.getLogger('market_data')
 
 # Cache directory for storing fetched data
 CACHE_DIR = Path("./cache")
-CACHE_DIR.mkdir(exist_ok=True)
+CACHE_DIR.mkdir(exist_ok=True) 
 
 # **Fix this before pushing to GitHUB**
 # Default OpenRouter API key - should be overridden with environment variable
