@@ -79,6 +79,9 @@ class MarketDataManager:
             
         Returns:
             pandas.DataFrame: Historical stock data
+            
+        Raises:
+            ValueError: If ticker is invalid or no data is returned
         """
         # Set ticker if given, else use ones from class initialisation.
         if ticker is None:
@@ -98,7 +101,11 @@ class MarketDataManager:
             logger.info(f"Loading cached data for {ticker} ({period})")
             try:
                 self.data = pd.read_csv(cache_file, index_col=0, parse_dates=True)
-                return self.data
+                # Verify the cached data is not empty
+                if self.data.empty:
+                    logger.warning(f"Cached data for {ticker} is empty, fetching fresh data")
+                else:
+                    return self.data
             except Exception as e:
                 logger.warning(f"Error loading cached data: {e}")
                 # Fall through to fetching fresh data
@@ -107,13 +114,34 @@ class MarketDataManager:
         logger.info(f"Fetching data for {ticker} ({period})")
         try:
             stock = yf.Ticker(ticker)
+            
+            # Check if the ticker exists by trying to get info
+            try:
+                info = stock.info
+                if not info or 'regularMarketPrice' not in info:
+                    logger.error(f"Invalid ticker symbol: {ticker}")
+                    raise ValueError(f"Invalid ticker symbol: {ticker}. The stock ticker does not exist or has no data.")
+            except Exception as e:
+                logger.error(f"Error retrieving ticker info: {e}")
+                raise ValueError(f"Invalid ticker symbol: {ticker}. The stock ticker does not exist or has no data.")
+            
+            # Fetch historical data
             self.data = stock.history(period=period)
+            
+            # Check if data is empty
+            if self.data.empty:
+                logger.error(f"No data returned for ticker: {ticker}")
+                raise ValueError(f"No data available for {ticker} in the specified period ({period}).")
             
             # Cache the data
             if use_cache:
                 self.data.to_csv(cache_file)
                 
             return self.data
+        except ValueError as e:
+            # Re-raise ValueError for invalid tickers
+            logger.error(f"Error with ticker {ticker}: {e}")
+            raise
         except Exception as e:
             logger.error(f"Error fetching stock data: {e}")
             raise RuntimeError(f"Failed to fetch data for {ticker}: {str(e)}")

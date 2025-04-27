@@ -42,6 +42,7 @@ class CrazyStockBadge:
     
     Version 1.0 - Cline implementation for Martin East - Implements user-friendly CLI with interactive prompts - Apr 13, 2025.
     Version 1.1 - Martin East, review and tidy up, add complete code for stubs - Apr 14, 2025.
+    Version 2.0 - Cline for Martin East, refactor logging to use log-levels - Apr 27, 2025.
     """
     
     def __init__(self):
@@ -96,7 +97,7 @@ class CrazyStockBadge:
         # Set default values or from command line arguments.
         self.ticker = self.args.ticker if hasattr(self, 'args') else 'APPL'
         self.period = self.args.period if hasattr(self, 'args') else '1y'  
-        self.ga_generations = self.args.ga_generations if hasattr(self, 'args') else 100
+        self.ga_generations = self.args.ga_generations if hasattr(self, 'args') else 10
 
         self.mdm = None # Placeholder for MarketDataManager instance   
         self.stock_report = None # Placeholder for stock report content
@@ -114,6 +115,26 @@ class CrazyStockBadge:
             self.ticker = self.args.ticker.upper()
             print(f"Using given ticker symbol: {Fore.GREEN}{self.ticker}{Style.RESET_ALL}")
         else:
+            # Define example tickers with company names
+            example_tickers = [
+                ("AAPL", "Apple Inc."),
+                ("MSFT", "Microsoft Corporation"),
+                ("GOOGL", "Alphabet Inc. (Google)"),
+                ("AMZN", "Amazon.com Inc."),
+                ("TSLA", "Tesla Inc."),
+                ("META", "Meta Platforms Inc. (Facebook)"),
+                ("NVDA", "NVIDIA Corporation"),
+                ("JPM", "JPMorgan Chase & Co."),
+                ("V", "Visa Inc."),
+                ("WMT", "Walmart Inc.")
+            ]
+            
+            # Display example tickers
+            print(f"{Fore.GREEN}Example stock tickers you can use:{Style.RESET_ALL}")
+            for ticker, company in example_tickers:
+                print(f"{Fore.GREEN}  {ticker:<6}{Style.RESET_ALL} - {company}")
+            print()
+            
             self.ticker = input(f"{Fore.YELLOW}What stock price symbol would you like to choose? > {Style.RESET_ALL}").upper()
             print(f"\nYou chose {Fore.GREEN}{self.ticker}{Style.RESET_ALL}. Let's see what we can do.")
 
@@ -122,7 +143,16 @@ class CrazyStockBadge:
         #
         print(f"\n{Fore.BLUE}... Retrieving Market Data from Yahoo Finance{Style.RESET_ALL}")
         self.mdm = md.MarketDataManager(ticker=self.ticker, period=self.period)
-        self.mdm.fetch_stock_data(use_cache=True)
+        
+        try:
+            self.mdm.fetch_stock_data(use_cache=True)
+        except ValueError as e:
+            print(f"\n{Fore.RED}Error: {str(e)}{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}Please try again with a valid ticker symbol.{Style.RESET_ALL}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"\n{Fore.RED}Error fetching stock data: {str(e)}{Style.RESET_ALL}")
+            sys.exit(1)
 
         print(f"{Fore.BLUE}... Running some technical Analysis{Style.RESET_ALL}")
         self.mdm.perform_technical_analysis()
@@ -172,27 +202,9 @@ class CrazyStockBadge:
         self.generate_badge()
         print(f"{Fore.BLUE}... Badge generation complete!{Style.RESET_ALL}")
 
-        # Get the badge complexity stats
-        # Ensure the badge has its final_model generated
-        if self.badge.final_model is None:
-            self.badge.combine_models()
-            
-        # Create analyzer and get complexity report
-        analyzer = ComplexityAnalyzer(self.badge.final_model)
-        # Print the complexity report
-        print(f"\n{Fore.LIGHTBLUE_EX}=== BADGE COMPLEXITY REPORT ==={Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Total nodes: {self.complexity_report['total_nodes']}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Max depth: {self.complexity_report['max_depth']}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Complexity score: {self.complexity_report['complexity_score']:.2f}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Operation counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['operation_counts'].items()])}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Primitive counts: {', '.join([f'{k}: {v}' for k, v in self.complexity_report['primitive_counts'].items()])}{Style.RESET_ALL}")
-        print(f"{Fore.LIGHTBLUE_EX}... Best fitness: {self.ga_instance.best_solution()[1]:.2f}{Style.RESET_ALL}")
-
-
         output_file = self.args.output 
         print(f"{Fore.BLUE}... Writing SCAD object to {output_file}...{Style.RESET_ALL}")
 
-        
         # Closing information
         #
         output_file = self.args.output if self.args.output else f"./scad_models/{self.ticker}_badge.scad"
@@ -224,16 +236,19 @@ class CrazyStockBadge:
             num_generations=self.ga_generations,
             num_parents_mating=2,
             fitness_func=self.fitness_function,
-            sol_per_pop=50,
+            sol_per_pop=20, # Lower is better to stop early convergence.
             num_genes=len(gene_space),
             gene_space=gene_space,
             parent_selection_type="tournament",
-            K_tournament=3,
+            K_tournament=3, # Keep low to avoid early convergence.
             crossover_type="uniform",
+            crossover_probability=0.8,
             mutation_type="random",
-            mutation_percent_genes=20,
-            keep_elitism=2,
-            on_generation=self._on_generation
+            mutation_percent_genes=10,
+            keep_elitism=2, # Keep the best solution from the previous generation
+            mutation_probability=0.2, # 20% chance of mutation
+            on_generation=self._on_generation,
+            allow_duplicate_genes=True # Necessary because we have small gene space for most genes
         )
         
         # Run the genetic algorithm
@@ -262,7 +277,7 @@ class CrazyStockBadge:
                 output_file = self.args.output
         else:
             # Default output file in scad_models directory
-            output_file = f"./scad_models/{self.args.ticker}_badge.scad"
+            output_file = f"./scad_models/{self.ticker}_badge.scad"
         
         self.args.output = output_file
         self.logger.info(f"Saving badge to {output_file}")
@@ -288,6 +303,7 @@ class CrazyStockBadge:
         self.logger.info(f"Complexity score: {self.complexity_report['complexity_score']:.2f}")
         self.logger.info(f"Total nodes: {self.complexity_report['total_nodes']}")
         self.logger.info(f"Max depth: {self.complexity_report['max_depth']}")
+        self.logger.info(f"Fitness: {solution_fitness:.2f}")
                 
         # Log badge details
         self.logger.info(f"Badge generation complete. Output file: {output_file}")
@@ -482,9 +498,7 @@ class CrazyStockBadge:
         Attribution: Cline implementation for Martin East - Generation callback - Apr 17, 2025
         Version 2.0: Cline implementation for Martin East - Added SCAD model generation for fittest individual - Apr 27, 2025
         Version 2.1: Martin East - Added debug logging for generation callback, write out interim fittest models for debug - Apr 27, 2025.
-        Version 2.2: Cline - Added debug flag to control generation printing - Apr 27, 2025.
-        Version 2.3: Cline - Added detailed debugging for fitness discrepancy - Apr 27, 2025.
-        
+
         Args:
             ga_instance: The genetic algorithm instance
         """
@@ -514,9 +528,13 @@ class CrazyStockBadge:
             best_badge.save_to_file(output_file)
             self.logger.info(f"Generation {generation_num}: Saved this generation's best model to {output_file}")
         
+        print(f"{Fore.BLUE}.oOo.{Style.RESET_ALL}", end=(""))
+
+
         if ga_instance.generations_completed % 10 == 0:
             # Log the best solution according to PyGAD
             self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
+            print(f"{Fore.BLUE} ... Current best fitness: {best_fitness:.2f} {Style.RESET_ALL}")
 
 
     def _create_gene_space(self):

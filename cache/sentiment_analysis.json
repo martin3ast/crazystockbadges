@@ -1,16 +1,16 @@
 {
   "overall_sentiment": {
-    "valence": 0.6505977011494253,
-    "arousal": 0.4741149425287357,
-    "dominance": 0.5964827586206897,
-    "confidence": 0.9927007299270073,
-    "financial_sentiment": 0.014598540145985401,
-    "coverage": 0.635036496350365,
-    "total_words": 137,
-    "matched_words": 87,
-    "hedging_words": 1,
-    "financial_positive": 4,
-    "financial_negative": 2
+    "valence": 0.653653846153846,
+    "arousal": 0.476525641025641,
+    "dominance": 0.5936282051282051,
+    "confidence": 1.0,
+    "financial_sentiment": 0.058823529411764705,
+    "coverage": 0.5735294117647058,
+    "total_words": 136,
+    "matched_words": 78,
+    "hedging_words": 0,
+    "financial_positive": 8,
+    "financial_negative": 0
   },
   "emotional_summary": {
     "emotional_tone": "neutral and moderate",
@@ -21,98 +21,66 @@
   },
   "key_terms": {
     "positive_terms": [
-      "love",
-      "happy",
-      "fabulous",
-      "energy",
-      "kind",
+      "embrace",
+      "optimism",
+      "opportunity",
       "growth",
+      "shopping",
       "strong",
-      "company",
+      "innovate",
       "future",
-      "rich"
+      "value",
+      "presence"
     ],
     "negative_terms": [
-      "back",
-      "buckle",
-      "period",
-      "wild",
+      "turning",
+      "relative",
+      "past",
+      "times",
+      "price",
+      "chart",
+      "index",
+      "volatile",
       "low",
-      "risk",
-      "reduce",
-      "indecision",
-      "crazy",
-      "decrease"
+      "crazy"
     ],
     "high_arousal_terms": [
-      "wild",
+      "rollercoaster",
+      "innovate",
       "crazy",
-      "risk",
+      "volatile",
       "strong",
-      "happy",
-      "energy",
-      "commitment",
-      "player",
-      "fabulous",
-      "future"
+      "opportunity",
+      "strategic",
+      "turning",
+      "strength",
+      "heavily"
     ],
     "high_dominance_terms": [
-      "rich",
       "strong",
       "major",
-      "energy",
-      "commitment",
+      "compelling",
+      "strategic",
+      "strength",
+      "stability",
       "potential",
-      "innovative",
-      "value",
-      "company",
-      "fabulous"
+      "opportunity",
+      "heavily",
+      "optimism"
     ]
   },
   "one_word_summary": "NEUTRAL",
   "sentence_analysis": [
     {
-      "sentence": "Crazy Badge: \"Hello, fabulous investors!",
+      "sentence": "Crazy Badge here, bringing you the latest on one of the retail giants - Walmart (WMT)!",
       "sentiment": {
-        "valence": 0.5673333333333334,
-        "arousal": 0.6636666666666667,
-        "dominance": 0.6030000000000001,
+        "valence": 0.44375000000000003,
+        "arousal": 0.494,
+        "dominance": 0.44825000000000004,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.6,
-        "total_words": 5,
-        "matched_words": 3,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Crazy Badge here with your latest financial report, and today we're diving into the world of BP.",
-      "sentiment": {
-        "valence": 0.5668333333333333,
-        "arousal": 0.49583333333333335,
-        "dominance": 0.5701666666666667,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.6666666666666666,
+        "coverage": 0.4444444444444444,
         "total_words": 9,
-        "matched_words": 6,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Buckle up, folks, because we've got a wild ride ahead!",
-      "sentiment": {
-        "valence": 0.5605,
-        "arousal": 0.5700000000000001,
-        "dominance": 0.5640000000000001,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.5714285714285714,
-        "total_words": 7,
         "matched_words": 4,
         "hedging_words": 0,
         "financial_positive": 0,
@@ -120,79 +88,111 @@
       }
     },
     {
-      "sentence": "BP, with its rich history dating back to 1909, has been a major player in the energy sector.",
+      "sentence": "\ud83d\ude80\n\nWalmart has been making waves in the financial world, with its current price standing at $95.09.",
       "sentiment": {
-        "valence": 0.6897142857142857,
-        "arousal": 0.5004285714285714,
-        "dominance": 0.7071428571428572,
+        "valence": 0.6066666666666667,
+        "arousal": 0.41133333333333333,
+        "dominance": 0.5921666666666666,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.7777777777777778,
-        "total_words": 9,
-        "matched_words": 7,
+        "coverage": 0.75,
+        "total_words": 8,
+        "matched_words": 6,
         "hedging_words": 0,
         "financial_positive": 0,
         "financial_negative": 0
       }
     },
     {
-      "sentence": "From its ups and downs to its innovative solutions, BP has always been a company to watch.",
+      "sentence": "The past year has been quite a rollercoaster for this mega-retailer, with a 52-week high of $105.01 and a low of $57.92, witnessing a significant price change of 59.85%.",
       "sentiment": {
-        "valence": 0.7723333333333334,
-        "arousal": 0.4703333333333333,
-        "dominance": 0.6836666666666668,
+        "valence": 0.5834444444444444,
+        "arousal": 0.4751111111111111,
+        "dominance": 0.48566666666666664,
         "confidence": 1.0,
-        "financial_sentiment": 0.125,
-        "coverage": 0.375,
+        "financial_sentiment": 0.0,
+        "coverage": 0.75,
+        "total_words": 12,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Investors have been closely monitoring this stock as it navigates through the volatile market conditions.",
+      "sentiment": {
+        "valence": 0.548,
+        "arousal": 0.53125,
+        "dominance": 0.5215,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5,
         "total_words": 8,
-        "matched_words": 3,
+        "matched_words": 4,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Now, let's dive into some technical indicators.",
+      "sentiment": {
+        "valence": 0.5465,
+        "arousal": 0.5105,
+        "dominance": 0.618,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5,
+        "total_words": 4,
+        "matched_words": 2,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The latest MACD value for Walmart is 1.60, indicating a potential bullish trend in the stock.",
+      "sentiment": {
+        "valence": 0.729,
+        "arousal": 0.48440000000000005,
+        "dominance": 0.662,
+        "confidence": 1.0,
+        "financial_sentiment": 0.2222222222222222,
+        "coverage": 0.5555555555555556,
+        "total_words": 9,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 2,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The Relative Strength Index (RSI) is at 58.89, suggesting that the stock is neither overbought nor oversold at the moment.",
+      "sentiment": {
+        "valence": 0.5896,
+        "arousal": 0.43620000000000003,
+        "dominance": 0.5004000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.1,
+        "coverage": 0.5,
+        "total_words": 10,
+        "matched_words": 5,
         "hedging_words": 0,
         "financial_positive": 1,
         "financial_negative": 0
       }
     },
     {
-      "sentence": "Did you know that BP was one of the first major oil companies to publicly acknowledge the risks of climate change and take steps towards a more sustainable future?",
+      "sentence": "But what really sets Walmart apart is its forward-thinking approach to e-commerce.",
       "sentiment": {
-        "valence": 0.6791666666666667,
-        "arousal": 0.43041666666666667,
-        "dominance": 0.5775833333333332,
+        "valence": 0.612,
+        "arousal": 0.392,
+        "dominance": 0.61,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.7058823529411765,
-        "total_words": 17,
-        "matched_words": 12,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "That's the kind of forward-thinking we love to see!",
-      "sentiment": {
-        "valence": 0.851,
-        "arousal": 0.3426666666666667,
-        "dominance": 0.5343333333333333,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.6,
-        "total_words": 5,
-        "matched_words": 3,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "So, where does BP stand now?",
-      "sentiment": {
-        "valence": 0.6,
-        "arousal": 0.324,
-        "dominance": 0.509,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.5,
-        "total_words": 2,
+        "coverage": 0.14285714285714285,
+        "total_words": 7,
         "matched_words": 1,
         "hedging_words": 0,
         "financial_positive": 0,
@@ -200,105 +200,105 @@
       }
     },
     {
-      "sentence": "Currently trading at $29.19, it's essential to note that the stock has seen a 21.79% decrease from its 52-week high of $37.50, with a low of $25.22.",
+      "sentence": "Did you know that Walmart was one of the first major retailers to embrace online shopping and has been investing heavily in its digital capabilities?",
       "sentiment": {
-        "valence": 0.5307499999999999,
-        "arousal": 0.363625,
-        "dominance": 0.452625,
-        "confidence": 1.0,
-        "financial_sentiment": -0.1,
-        "coverage": 0.8,
-        "total_words": 10,
-        "matched_words": 8,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 1
-      }
-    },
-    {
-      "sentence": "The latest MACD value of -0.99 and RSI of 46.52 indicate a period of potential consolidation and indecision in the market.",
-      "sentiment": {
-        "valence": 0.5975714285714285,
-        "arousal": 0.4694285714285714,
-        "dominance": 0.6284285714285716,
-        "confidence": 1.0,
-        "financial_sentiment": 0.1,
-        "coverage": 0.7,
-        "total_words": 10,
-        "matched_words": 7,
-        "hedging_words": 0,
-        "financial_positive": 1,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Looking ahead, what does the future hold for BP?",
-      "sentiment": {
-        "valence": 0.6813333333333333,
-        "arousal": 0.48466666666666675,
-        "dominance": 0.6076666666666667,
+        "valence": 0.7202500000000001,
+        "arousal": 0.46087500000000003,
+        "dominance": 0.645125,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.6,
-        "total_words": 5,
-        "matched_words": 3,
+        "coverage": 0.6153846153846154,
+        "total_words": 13,
+        "matched_words": 8,
         "hedging_words": 0,
         "financial_positive": 0,
         "financial_negative": 0
       }
     },
     {
-      "sentence": "With a strong commitment to renewable energy and a focus on ESG initiatives, BP is positioning itself as a key player in the transition towards a more sustainable energy landscape.",
+      "sentence": "This strategic move has paid off exceptionally well, especially during these challenging times when consumers are increasingly turning to online shopping.",
       "sentiment": {
-        "valence": 0.7314999999999999,
-        "arousal": 0.5477000000000001,
-        "dominance": 0.7061,
+        "valence": 0.6714,
+        "arousal": 0.5526,
+        "dominance": 0.604,
         "confidence": 1.0,
-        "financial_sentiment": 0.0625,
-        "coverage": 0.625,
-        "total_words": 16,
-        "matched_words": 10,
+        "financial_sentiment": 0.0,
+        "coverage": 0.38461538461538464,
+        "total_words": 13,
+        "matched_words": 5,
         "hedging_words": 0,
-        "financial_positive": 1,
+        "financial_positive": 0,
         "financial_negative": 0
       }
     },
     {
-      "sentence": "Keep an eye on their investments in renewable energy projects and their efforts to reduce carbon emissions, as these could be key drivers of future growth.",
+      "sentence": "As Walmart continues to innovate and expand its reach, investors are eyeing its future growth potential with optimism.",
       "sentiment": {
-        "valence": 0.679,
-        "arousal": 0.432125,
-        "dominance": 0.575875,
-        "confidence": 0.9333333333333333,
-        "financial_sentiment": 0.06666666666666667,
-        "coverage": 0.5333333333333333,
-        "total_words": 15,
-        "matched_words": 8,
-        "hedging_words": 1,
-        "financial_positive": 1,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "As always, remember to do your due diligence and consider your own risk tolerance before making any investment decisions.",
-      "sentiment": {
-        "valence": 0.6482857142857142,
-        "arousal": 0.4524285714285714,
-        "dominance": 0.576,
+        "valence": 0.8527142857142856,
+        "arousal": 0.6397142857142857,
+        "dominance": 0.7631428571428571,
         "confidence": 1.0,
-        "financial_sentiment": -0.1,
-        "coverage": 0.7,
-        "total_words": 10,
+        "financial_sentiment": 0.18181818181818182,
+        "coverage": 0.6363636363636364,
+        "total_words": 11,
         "matched_words": 7,
         "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 1
+        "financial_positive": 2,
+        "financial_negative": 0
       }
     },
     {
-      "sentence": "That's all for now, stay tuned for more market insights with Crazy Badge!",
+      "sentence": "With a solid foundation and a strong market presence, Walmart remains a compelling investment opportunity for those looking for stability and growth in the retail sector.",
       "sentiment": {
-        "valence": 0.5127499999999999,
+        "valence": 0.7497692307692307,
+        "arousal": 0.4528461538461539,
+        "dominance": 0.7026153846153846,
+        "confidence": 1.0,
+        "financial_sentiment": 0.2,
+        "coverage": 0.8666666666666667,
+        "total_words": 15,
+        "matched_words": 13,
+        "hedging_words": 0,
+        "financial_positive": 3,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "So there you have it, folks!",
+      "sentiment": {
+        "valence": 0.5,
+        "arousal": 0.5,
+        "dominance": 0.5,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.0,
+        "total_words": 1,
+        "matched_words": 0,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Keep an eye on Walmart as it continues to chart its course in the ever-evolving retail landscape.",
+      "sentiment": {
+        "valence": 0.5886,
+        "arousal": 0.2814,
+        "dominance": 0.4272,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5555555555555556,
+        "total_words": 9,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "This is Crazy Badge signing off, stay tuned for more market updates!",
+      "sentiment": {
+        "valence": 0.51275,
         "arousal": 0.5215,
         "dominance": 0.51225,
         "confidence": 1.0,
@@ -312,16 +312,16 @@
       }
     },
     {
-      "sentence": "Happy investing!\"",
+      "sentence": "\ud83d\udcc8\ud83d\udd0d",
       "sentiment": {
-        "valence": 1.0,
-        "arousal": 0.735,
-        "dominance": 0.772,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.5,
-        "total_words": 2,
-        "matched_words": 1,
+        "valence": 0.5,
+        "arousal": 0.5,
+        "dominance": 0.5,
+        "confidence": 1,
+        "financial_sentiment": 0,
+        "coverage": 0,
+        "total_words": 0,
+        "matched_words": 0,
         "hedging_words": 0,
         "financial_positive": 0,
         "financial_negative": 0
