@@ -176,3 +176,5 @@ cython_debug/
 # Custom
 stl_models/
 scad_models/
+plots/
+cache/

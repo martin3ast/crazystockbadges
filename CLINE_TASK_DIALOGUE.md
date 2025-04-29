@@ -596,3 +596,52 @@ The implementation included these key changes:
 The implementation successfully adds randomness to the terrain generation process, creating more varied and interesting 3D models. Each time a badge is generated, the terrain will have a unique appearance due to the random factor, ranging from minimal (when random_factor is close to 0) to exaggerated (when random_factor is close to 2).
 
 This enhancement adds an element of surprise and creativity to the badge generation process, making each badge truly unique even when generated with the same stock data and parameters. The random factor affects different aspects of each terrain type, ensuring a wide variety of possible outcomes.
+
+## Session 11: Implementing PyGAD Visualization Module (April 27, 2025)
+
+### Initial Request
+
+**User:** Implement pygad.visualize Module in this code so that we can plot the fitness function and new solution rate.
+
+**Cline:** After examining the crazystockbadges.py file and the PyGAD documentation, I identified that we could enhance the genetic algorithm implementation by adding visualization capabilities to track fitness evolution and new solution rates.
+
+### Implementation Approach
+
+I approached the implementation by:
+
+1. **Analyzing the Current GA Implementation**: I examined how the genetic algorithm was currently being used in the crazystockbadges.py file.
+
+2. **Researching PyGAD Visualization**: I checked the PyGAD documentation to understand the visualization module's capabilities and requirements.
+
+3. **Identifying Integration Points**: I determined where and how to integrate the visualization module with minimal changes to the existing code.
+
+4. **Adding Command-Line Control**: I added a command-line flag to enable visualization only when requested, keeping it optional.
+
+### Key Changes Made
+
+The implementation included these key changes:
+
+1. **Added Import Statement**: Added `from pygad.visualize import plot` to import the visualization module.
+
+2. **Added Command-Line Argument**: Added a `--visualize-ga` flag to enable visualization only when requested.
+
+3. **Enabled Solution Saving**: Modified the GA instance creation to include `save_solutions=True`, which is required for the `plot_new_solution_rate` function.
+
+4. **Created Visualization Method**: Added a `visualize_ga_results` method to create and display the fitness and new solution rate plots.
+
+5. **Added Visualization Call**: Added code to call the visualization method after the GA has run if the `--visualize-ga` flag is provided.
+
+### Final Result
+
+The implementation successfully adds visualization capabilities to the genetic algorithm, allowing users to:
+
+1. Track how the fitness value evolves across generations
+2. Monitor the rate of exploring new solutions during the GA run
+3. Save these visualizations to a `./plots` directory for later analysis
+
+These visualizations provide valuable insights into the genetic algorithm's performance and behavior, helping users understand how the algorithm is exploring the solution space and converging on optimal badge designs.
+
+To use this feature, users simply need to add the `--visualize-ga` flag when running the program:
+```
+python crazystockbadges.py --ticker AAPL --visualize-ga
+```

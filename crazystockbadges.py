@@ -10,16 +10,18 @@ Version 1.0 - Cline implementation for Martin East - Based on original requireme
 Version 1.1 - Martin East - Strip unnecessary error checking and simplify -  Apr 14, 2025.
 Version 2.0 - Martin East - Simplify, removed unecessary functions and added docstrings - Apr 14, 2025.
 """
-
+import os
 import argparse
 import sys
 import time
-import os
 import re
 import logging
 import random
+import statistics
 from collections import defaultdict
 from colorama import init, Fore, Style
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Import Python debugger
 import pdb
@@ -31,6 +33,7 @@ from complexity_analyser import ComplexityAnalyzer
 from sentiment_analyser import StockReportAnalyzer
 from solid import scad_render
 import pygad
+from pygad.visualize import plot
 
 
 # Initialize colorama for Text color on terminal output.
@@ -65,6 +68,8 @@ class CrazyStockBadge:
                            help='Number of generations for the genetic algorithm (default: 10)')
         self.parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], 
                            default='INFO', help='Set logging level (default: INFO)')
+        self.parser.add_argument('--visualize-ga', action='store_true',
+                           help='Visualize genetic algorithm results')
         
         # Parse the arguments
         self.args = self.parser.parse_args()
@@ -102,6 +107,20 @@ class CrazyStockBadge:
         self.mdm = None # Placeholder for MarketDataManager instance   
         self.stock_report = None # Placeholder for stock report content
         
+        # Initialize fitness statistics tracking
+        self.fitness_stats = {
+            'generation': [],
+            'min': [],
+            'mean': [],
+            'max': [],
+            'best': []  # Best solution fitness across all generations
+        }
+        
+        # Track the best solution ourselves
+        self.best_badge = None
+        self.best_report = None
+        self.best_fitness = float('-inf')  # Start with negative infinity so any fitness is better
+        self.best_solution = None  # Store the genes of the best solution
     
     
     def run(self):
@@ -200,7 +219,6 @@ class CrazyStockBadge:
         
         # Generate the badge using the genetic algorithm
         self.generate_badge()
-        print(f"{Fore.BLUE}... Badge generation complete!{Style.RESET_ALL}")
 
         output_file = self.args.output 
         print(f"{Fore.BLUE}... Writing SCAD object to {output_file}...{Style.RESET_ALL}")
@@ -236,49 +254,35 @@ class CrazyStockBadge:
             num_generations=self.ga_generations,
             num_parents_mating=2,
             fitness_func=self.fitness_function,
-            sol_per_pop=20, # Lower is better to stop early convergence.
+            sol_per_pop=20,
             num_genes=len(gene_space),
             gene_space=gene_space,
             parent_selection_type="tournament",
-            K_tournament=3, # Keep low to avoid early convergence.
-            crossover_type="uniform",
+            K_tournament=2,
+            crossover_type="two_points",
             crossover_probability=0.8,
-            mutation_type="random",
-            mutation_percent_genes=10,
-            keep_elitism=2, # Keep the best solution from the previous generation
-            mutation_probability=0.2, # 20% chance of mutation
+            mutation_type="adaptive",
+            mutation_num_genes=[3,1],
+            keep_elitism=1, # Keep the best solution from the previous generation
+            mutation_probability=[0.3,0.1],
             on_generation=self._on_generation,
-            allow_duplicate_genes=True # Necessary because we have small gene space for most genes
+            allow_duplicate_genes=True, # Necessary because we have small gene space for most genes
+            save_solutions=True # Enable saving solutions for visualization
         )
         
         # Run the genetic algorithm
         self.logger.info(f"Running genetic algorithm for {self.ga_generations} generations")
         self.ga_instance.run()
         
-        # Get the best solution according to PyGAD
-        solution, solution_fitness, solution_idx = self.ga_instance.best_solution()
-        self.logger.info(f"Best solution (individual {solution_idx}) found with fitness: {solution_fitness:.2f}")
-        
-        # Get the best badge and complexity report
-        best_badge, complexity_report, _ = self.ga_instance.badges[solution_idx]
+    
+        best_badge = self.best_badge
+        complexity_report = self.best_report
         
         # Instead of regenerating parameters from genes, use the actual parameters from the badge
         best_params = best_badge.params
-        
-        # Store the complexity report for display
-        self.complexity_report = complexity_report
             
         # Save the best badge to scad_models directory
-        if self.args.output:
-            # If output file is specified, use it but ensure it's in scad_models directory
-            if not self.args.output.startswith("./scad_models/"):
-                output_file = f"./scad_models/{os.path.basename(self.args.output)}"
-            else:
-                output_file = self.args.output
-        else:
-            # Default output file in scad_models directory
-            output_file = f"./scad_models/{self.ticker}_badge.scad"
-        
+        output_file = f"./scad_models/{self.ticker}_badge.scad"
         self.args.output = output_file
         self.logger.info(f"Saving badge to {output_file}")
 
@@ -291,23 +295,29 @@ class CrazyStockBadge:
         self.badge = best_badge
         self.badge_params = best_params
         self.badge_output_file = output_file
+        self.badge_complexity_report = complexity_report
+ 
 
         # Log terrain types
-        if 'terrain_types' in best_params:
-            terrain_types = best_params['terrain_types']
-            self.logger.info(f"Terrain types: {', '.join(terrain_types)}")
-        else:
-            self.logger.info(f"Terrain type: {best_params.get('terrain_type', 'N/A')}")
+        #if 'terrain_types' in best_params:
+        terrain_types = best_params['terrain_types']
+        self.logger.info(f"Terrain types: {', '.join(terrain_types)}")
+        #else:
+        #   self.logger.info(f"Terrain type: {best_params.get('terrain_type', 'N/A')}")
         
         # Log complexity metrics
-        self.logger.info(f"Complexity score: {self.complexity_report['complexity_score']:.2f}")
-        self.logger.info(f"Total nodes: {self.complexity_report['total_nodes']}")
-        self.logger.info(f"Max depth: {self.complexity_report['max_depth']}")
-        self.logger.info(f"Fitness: {solution_fitness:.2f}")
+        self.logger.info(f"Complexity score: {complexity_report['complexity_score']:.2f}")
+        self.logger.info(f"Total nodes: {complexity_report['total_nodes']}")
+        self.logger.info(f"Our Best Fitness: {self.best_fitness:.2f}")
                 
         # Log badge details
-        self.logger.info(f"Badge generation complete. Output file: {output_file}")
         self.logger.info(f"Badge type: {best_params['badge_type']}")
+        self.logger.info(f"Badge generation complete. Output file: {output_file}")
+
+        
+        # Generate visualization if requested
+        if self.args.visualize_ga:
+            self.visualize_ga_results()
         
 
     def get_text_content(self, text_type, sentiment):
@@ -484,6 +494,20 @@ class CrazyStockBadge:
         # Update the fitness value in badges
         ga_instance.badges[solution_idx] = (badge, report, fitness)
         
+        # Update our best solution tracking if this is better than what we've seen
+        if fitness > self.best_fitness:
+            self.best_fitness = fitness
+            self.best_badge = badge
+            self.best_report = report
+            self.best_solution = solution.copy()  # Store a copy of the genes
+            self.logger.debug(f"New best solution found: fitness={fitness:.2f}, solution_idx={solution_idx}")
+        
+        # Enhanced debug logging for fitness calculation
+        self.logger.debug(f"FITNESS_FUNCTION: solution_idx={solution_idx}, calculated_fitness={fitness:.2f}")
+        self.logger.debug(f"FITNESS_FUNCTION: total_nodes={report['total_nodes']} * weight={weights['total_nodes']} = {report['total_nodes'] * weights['total_nodes']:.2f}")
+        self.logger.debug(f"FITNESS_FUNCTION: complexity_score={report['complexity_score']:.2f} * weight={weights['complexity_score']} = {report['complexity_score'] * weights['complexity_score']:.2f}")
+        self.logger.debug(f"FITNESS_FUNCTION: sum = {report['total_nodes'] * weights['total_nodes'] + report['complexity_score'] * weights['complexity_score']:.2f}")
+        
         # Print detailed information about this solution
         self.logger.debug(f"Solution {solution_idx}: Fitness = {fitness:.2f}, Total nodes = {report['total_nodes']}, Complexity score = {report['complexity_score']:.2f}")
         self.logger.debug(f"Parameters: {', '.join([f'{k}: {v}' for k, v in badge.params.items()])}")
@@ -498,17 +522,50 @@ class CrazyStockBadge:
         Attribution: Cline implementation for Martin East - Generation callback - Apr 17, 2025
         Version 2.0: Cline implementation for Martin East - Added SCAD model generation for fittest individual - Apr 27, 2025
         Version 2.1: Martin East - Added debug logging for generation callback, write out interim fittest models for debug - Apr 27, 2025.
+        Version 2.2: Cline implementation for Martin East - Only write SCAD files if different from last generation - Apr 27, 2025.
+        Version 2.3: Cline implementation for Martin East - Added fitness statistics (min, max, mean, mode) - Apr 28, 2025.
+        Version 2.4: Cline - Added detailed debug logging to diagnose fitness discrepancy - Apr 28, 2025.
 
         Args:
             ga_instance: The genetic algorithm instance
         """
         best_solution, best_fitness, solution_idx = ga_instance.best_solution()
+        
+        # Enhanced debug logging for best solution
+        self.logger.debug(f"ON_GENERATION: best_solution_idx={solution_idx}, best_fitness={best_fitness:.2f}")
+        
+        # Check if this solution_idx exists in badges dictionary
+        if solution_idx in ga_instance.badges:
+            badge, report, stored_fitness = ga_instance.badges[solution_idx]
+            self.logger.debug(f"ON_GENERATION: stored_fitness={stored_fitness:.2f}, difference={best_fitness-stored_fitness:.2f}, ratio={best_fitness/stored_fitness if stored_fitness else 0:.2f}")
+            self.logger.debug(f"ON_GENERATION: total_nodes={report['total_nodes']}, complexity_score={report['complexity_score']:.2f}")
+            self.logger.debug(f"ON_GENERATION: calculated_check={report['total_nodes'] + report['complexity_score']:.2f}")
+        else:
+            self.logger.debug(f"ON_GENERATION: solution_idx {solution_idx} NOT FOUND in badges dictionary!")
 
         # Get the best badge from ga_instance.badges
-        best_badge = ga_instance.badges[solution_idx][0]
-        params = best_badge.params
+        if solution_idx in ga_instance.badges:
+            best_badge = ga_instance.badges[solution_idx][0]
+            params = best_badge.params
+        else:
+            self.logger.error(f"Best solution index {solution_idx} not found in badges dictionary!")
+            return
         
-        # Only print generation details if log level is DEBUG
+        # Calculate fitness statistics for this generation (always do this for plotting)
+        fitness_values = [ga_instance.badges[i][2] for i in range(len(ga_instance.population)) if i in ga_instance.badges]
+        
+        min_fitness = min(fitness_values)
+        max_fitness = max(fitness_values)
+        mean_fitness = statistics.mean(fitness_values)
+        
+        # Record statistics for plotting
+        self.fitness_stats['generation'].append(ga_instance.generations_completed)
+        self.fitness_stats['min'].append(min_fitness)
+        self.fitness_stats['mean'].append(mean_fitness)
+        self.fitness_stats['max'].append(max_fitness)
+        self.fitness_stats['best'].append(best_fitness)  # Best solution fitness across all generations
+    
+        # Only print generation (and save interim scad files) details if log level is DEBUG
         if self.args.log_level == 'DEBUG':
             # Get the best badge from ga_instance.badges
             best_badge = ga_instance.badges[solution_idx][0]
@@ -518,25 +575,126 @@ class CrazyStockBadge:
             self.logger.debug(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
             self.logger.debug(f"Parameters: Badge Type = {params['badge_type']}, Terrain Types = {params['terrain_types']}")
             self.logger.debug(f"Text Content = '{params['text_content']}', Text Position = {params['text_position']:.2f}°")
+            
         
             # Create a SCAD model for the fittest individual in each generation
             generation_num = ga_instance.generations_completed
             output_file = f"./scad_models/{self.ticker}_gen{generation_num}_badge.scad"
-        
+            
+            # Initialize last_scad_content attribute if it doesn't exist
+            if not hasattr(self, 'last_scad_content'):
+                self.last_scad_content = None
+            
+            # Generate the SCAD content for the current best badge
+            from solid import scad_render
+            current_scad_content = scad_render(best_badge.final_model)
+            
+            # Only write the file if it's different from the last generation
+            if self.last_scad_content != current_scad_content:
+                # Save the model to file
+                best_badge.save_to_file(output_file)
+                self.logger.info(f"Generation {generation_num}: Saved this generation's best model to {output_file} (different from previous)")
+                # Update the last SCAD content
+                self.last_scad_content = current_scad_content
+            else:
+                self.logger.info(f"Generation {generation_num}: Skipped saving model (identical to previous generation)")
 
-            # Save the model to file
-            best_badge.save_to_file(output_file)
-            self.logger.info(f"Generation {generation_num}: Saved this generation's best model to {output_file}")
-        
-        print(f"{Fore.BLUE}.oOo.{Style.RESET_ALL}", end=(""))
+            self.logger.debug(f"Generation {ga_instance.generations_completed} Fitness Statistics:")
+            self.logger.debug(f"  Min: {min_fitness:.2f}")
+            self.logger.debug(f"  Max: {max_fitness:.2f}")
+            self.logger.debug(f"  Mean: {mean_fitness:.2f}")
+            
+            # Print to console in debug mode
+            print(f"\n{Fore.CYAN}Generation {ga_instance.generations_completed} Fitness Statistics:{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}  Min: {min_fitness:.2f}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}  Max: {max_fitness:.2f}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}  Mean: {mean_fitness:.2f}{Style.RESET_ALL}")
+            print(f"{Fore.MAGENTA}  Best: {best_fitness:.2f}{Style.RESET_ALL}")
+            print(f"{Fore.BLUE}.oOo.{Style.RESET_ALL}", end=(""))
 
+        # print out a progress indicator
+        print(f"{Fore.BLUE}.oOo.{Style.RESET_ALL}",end="")
 
-        if ga_instance.generations_completed % 10 == 0:
+        if ga_instance.generations_completed % 5 == 0:
             # Log the best solution according to PyGAD
             self.logger.info(f"Generation {ga_instance.generations_completed}: Best fitness = {best_fitness:.2f}")
-            print(f"{Fore.BLUE} ... Current best fitness: {best_fitness:.2f} {Style.RESET_ALL}")
+            print(f"{Fore.BLUE} ... Best fitness: {best_fitness:.2f} {Style.RESET_ALL}")
 
 
+    def visualize_ga_results(self):
+        """
+        Create and display plots for the genetic algorithm results.
+        
+        Version 1.0: Cline implementation for Martin East - Visualization of GA results - Apr 27, 2025
+        Version 1.1: Cline bugfix for Martin East - Fixed visualization implementation - Apr 27, 2025
+        Version 1.2: Cline implementation for Martin East - Added fitness statistics plotting - Apr 28, 2025
+        """
+        self.logger.info("Generating visualization of GA results")
+        
+        # Create plots directory if it doesn't exist
+        plots_dir = "./plots"
+        os.makedirs(plots_dir, exist_ok=True)
+        
+        # Plot fitness evolution directly from the GA instance
+        # fitness_fig = self.ga_instance.plot_fitness(
+        #     title=f"{self.ticker} Badge - Fitness Evolution",
+        #     save_dir=plots_dir
+        # )
+        
+        # # Plot new solution rate directly from the GA instance
+        # solution_rate_fig = self.ga_instance.plot_new_solution_rate(
+        #     title=f"{self.ticker} Badge - New Solution Rate",
+        #     save_dir=plots_dir
+        # )
+        
+        # Plot fitness statistics (min, mean, max)
+        # if self.fitness_stats['generation']:
+        self.plot_fitness_statistics(plots_dir)
+        
+        self.logger.info(f"GA plots saved to {plots_dir}")
+        print(f"{Fore.GREEN}GA visualization plots saved to {plots_dir}{Style.RESET_ALL}")
+    
+    def plot_fitness_statistics(self, plots_dir):
+        """
+        Plot min, mean, and max fitness statistics for each generation.
+        
+        Version 1.0: Cline implementation for Martin East - Fitness statistics plotting - Apr 28, 2025
+        
+        Args:
+            plots_dir (str): Directory to save the plot
+        """
+        self.logger.info("Generating fitness statistics plot")
+        
+        # Create a new figure
+        plt.figure(figsize=(10, 6))
+        
+        # Plot the statistics
+        generations = self.fitness_stats['generation']
+        plt.plot(generations, self.fitness_stats['min'], 'b-', label='Min Fitness')
+        plt.plot(generations, self.fitness_stats['mean'], 'g-', label='Mean Fitness')
+        plt.plot(generations, self.fitness_stats['max'], 'r-', label='Max Fitness')
+        plt.plot(generations, self.fitness_stats['best'], 'm-', label='Best Solution')
+        
+        # Calculate and plot linear trend line for mean fitness
+        z = np.polyfit(generations, self.fitness_stats['mean'], 1)
+        p = np.poly1d(z)
+        plt.plot(generations, p(generations), 'g--', label='Mean Trend')
+        
+        # Add labels and title
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.title(f'{self.ticker} Badge - Fitness Statistics per Generation')
+        plt.grid(True)
+        plt.legend()
+        
+        # Save the plot
+        plot_path = os.path.join(plots_dir, f"{self.ticker}_fitness_stats.png")
+        plt.savefig(plot_path)
+        plt.close()
+        
+        self.logger.info(f"Fitness statistics plot saved to {plot_path}")
+        print(f"{Fore.GREEN}Fitness statistics plot saved to {plot_path}{Style.RESET_ALL}")
+    
     def _create_gene_space(self):
         """
         Define simplified gene space for badge generation.
@@ -552,8 +710,8 @@ class CrazyStockBadge:
             # Gene 0: Badge type (disc, rectangular, triangular)
             [0, 1, 2],
             
-            # Gene 1: Number of terrain types to use (1-6)
-            [1, 2, 3, 4],
+            # Gene 1: Number of terrain types to use (1-4)
+            [1,2,3,4],
             
             # Genes 2-5: Terrain types (up to 6 different types)
             # Each can be spiral_chart, bar_chart, pyramid, surface_plot
@@ -578,7 +736,7 @@ class CrazyStockBadge:
             
             # Gene 9: Size (small, medium, large)
             [0, 1, 2],
-            # Gene10: Spiral turns (1-3)
+            # Gene10: Spiral turns (1-10)
             {'low': 3, 'high': 10}
         
         ]

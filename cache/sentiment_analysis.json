@@ -1,16 +1,16 @@
 {
   "overall_sentiment": {
-    "valence": 0.653653846153846,
-    "arousal": 0.476525641025641,
-    "dominance": 0.5936282051282051,
+    "valence": 0.6475050505050505,
+    "arousal": 0.49339393939393944,
+    "dominance": 0.6022727272727273,
     "confidence": 1.0,
-    "financial_sentiment": 0.058823529411764705,
-    "coverage": 0.5735294117647058,
-    "total_words": 136,
-    "matched_words": 78,
+    "financial_sentiment": 0.0,
+    "coverage": 0.6149068322981367,
+    "total_words": 161,
+    "matched_words": 99,
     "hedging_words": 0,
-    "financial_positive": 8,
-    "financial_negative": 0
+    "financial_positive": 3,
+    "financial_negative": 3
   },
   "emotional_summary": {
     "emotional_tone": "neutral and moderate",
@@ -21,250 +21,58 @@
   },
   "key_terms": {
     "positive_terms": [
-      "embrace",
+      "innovation",
       "optimism",
-      "opportunity",
-      "growth",
-      "shopping",
-      "strong",
-      "innovate",
+      "energy",
+      "interesting",
+      "new",
+      "journey",
+      "company",
+      "personality",
       "future",
-      "value",
-      "presence"
+      "remarkable"
     ],
     "negative_terms": [
-      "turning",
-      "relative",
-      "past",
-      "times",
-      "price",
-      "chart",
-      "index",
-      "volatile",
+      "fuel",
+      "back",
+      "buckle",
+      "pushing",
+      "wild",
       "low",
-      "crazy"
+      "volatility",
+      "short",
+      "crazy",
+      "negative"
     ],
     "high_arousal_terms": [
+      "wild",
       "rollercoaster",
-      "innovate",
       "crazy",
-      "volatile",
-      "strong",
-      "opportunity",
-      "strategic",
-      "turning",
-      "strength",
-      "heavily"
+      "ambitious",
+      "volatility",
+      "momentum",
+      "interesting",
+      "energy",
+      "electric",
+      "journey"
     ],
     "high_dominance_terms": [
-      "strong",
-      "major",
-      "compelling",
-      "strategic",
-      "strength",
-      "stability",
+      "innovation",
+      "energy",
+      "worldwide",
+      "finance",
       "potential",
-      "opportunity",
-      "heavily",
-      "optimism"
+      "industry",
+      "technology",
+      "ability",
+      "optimism",
+      "testament"
     ]
   },
   "one_word_summary": "NEUTRAL",
   "sentence_analysis": [
     {
-      "sentence": "Crazy Badge here, bringing you the latest on one of the retail giants - Walmart (WMT)!",
-      "sentiment": {
-        "valence": 0.44375000000000003,
-        "arousal": 0.494,
-        "dominance": 0.44825000000000004,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.4444444444444444,
-        "total_words": 9,
-        "matched_words": 4,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "\ud83d\ude80\n\nWalmart has been making waves in the financial world, with its current price standing at $95.09.",
-      "sentiment": {
-        "valence": 0.6066666666666667,
-        "arousal": 0.41133333333333333,
-        "dominance": 0.5921666666666666,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.75,
-        "total_words": 8,
-        "matched_words": 6,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "The past year has been quite a rollercoaster for this mega-retailer, with a 52-week high of $105.01 and a low of $57.92, witnessing a significant price change of 59.85%.",
-      "sentiment": {
-        "valence": 0.5834444444444444,
-        "arousal": 0.4751111111111111,
-        "dominance": 0.48566666666666664,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.75,
-        "total_words": 12,
-        "matched_words": 9,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Investors have been closely monitoring this stock as it navigates through the volatile market conditions.",
-      "sentiment": {
-        "valence": 0.548,
-        "arousal": 0.53125,
-        "dominance": 0.5215,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.5,
-        "total_words": 8,
-        "matched_words": 4,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Now, let's dive into some technical indicators.",
-      "sentiment": {
-        "valence": 0.5465,
-        "arousal": 0.5105,
-        "dominance": 0.618,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.5,
-        "total_words": 4,
-        "matched_words": 2,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "The latest MACD value for Walmart is 1.60, indicating a potential bullish trend in the stock.",
-      "sentiment": {
-        "valence": 0.729,
-        "arousal": 0.48440000000000005,
-        "dominance": 0.662,
-        "confidence": 1.0,
-        "financial_sentiment": 0.2222222222222222,
-        "coverage": 0.5555555555555556,
-        "total_words": 9,
-        "matched_words": 5,
-        "hedging_words": 0,
-        "financial_positive": 2,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "The Relative Strength Index (RSI) is at 58.89, suggesting that the stock is neither overbought nor oversold at the moment.",
-      "sentiment": {
-        "valence": 0.5896,
-        "arousal": 0.43620000000000003,
-        "dominance": 0.5004000000000001,
-        "confidence": 1.0,
-        "financial_sentiment": 0.1,
-        "coverage": 0.5,
-        "total_words": 10,
-        "matched_words": 5,
-        "hedging_words": 0,
-        "financial_positive": 1,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "But what really sets Walmart apart is its forward-thinking approach to e-commerce.",
-      "sentiment": {
-        "valence": 0.612,
-        "arousal": 0.392,
-        "dominance": 0.61,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.14285714285714285,
-        "total_words": 7,
-        "matched_words": 1,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "Did you know that Walmart was one of the first major retailers to embrace online shopping and has been investing heavily in its digital capabilities?",
-      "sentiment": {
-        "valence": 0.7202500000000001,
-        "arousal": 0.46087500000000003,
-        "dominance": 0.645125,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.6153846153846154,
-        "total_words": 13,
-        "matched_words": 8,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "This strategic move has paid off exceptionally well, especially during these challenging times when consumers are increasingly turning to online shopping.",
-      "sentiment": {
-        "valence": 0.6714,
-        "arousal": 0.5526,
-        "dominance": 0.604,
-        "confidence": 1.0,
-        "financial_sentiment": 0.0,
-        "coverage": 0.38461538461538464,
-        "total_words": 13,
-        "matched_words": 5,
-        "hedging_words": 0,
-        "financial_positive": 0,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "As Walmart continues to innovate and expand its reach, investors are eyeing its future growth potential with optimism.",
-      "sentiment": {
-        "valence": 0.8527142857142856,
-        "arousal": 0.6397142857142857,
-        "dominance": 0.7631428571428571,
-        "confidence": 1.0,
-        "financial_sentiment": 0.18181818181818182,
-        "coverage": 0.6363636363636364,
-        "total_words": 11,
-        "matched_words": 7,
-        "hedging_words": 0,
-        "financial_positive": 2,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "With a solid foundation and a strong market presence, Walmart remains a compelling investment opportunity for those looking for stability and growth in the retail sector.",
-      "sentiment": {
-        "valence": 0.7497692307692307,
-        "arousal": 0.4528461538461539,
-        "dominance": 0.7026153846153846,
-        "confidence": 1.0,
-        "financial_sentiment": 0.2,
-        "coverage": 0.8666666666666667,
-        "total_words": 15,
-        "matched_words": 13,
-        "hedging_words": 0,
-        "financial_positive": 3,
-        "financial_negative": 0
-      }
-    },
-    {
-      "sentence": "So there you have it, folks!",
+      "sentence": "Hello, everyone!",
       "sentiment": {
         "valence": 0.5,
         "arousal": 0.5,
@@ -272,7 +80,7 @@
         "confidence": 1.0,
         "financial_sentiment": 0.0,
         "coverage": 0.0,
-        "total_words": 1,
+        "total_words": 2,
         "matched_words": 0,
         "hedging_words": 0,
         "financial_positive": 0,
@@ -280,15 +88,15 @@
       }
     },
     {
-      "sentence": "Keep an eye on Walmart as it continues to chart its course in the ever-evolving retail landscape.",
+      "sentence": "I'm Crazy Badge, your go-to investor personality, bringing you the latest scoop on Tesla (TSLA).",
       "sentiment": {
-        "valence": 0.5886,
-        "arousal": 0.2814,
-        "dominance": 0.4272,
+        "valence": 0.5992,
+        "arousal": 0.6084,
+        "dominance": 0.6466000000000001,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.5555555555555556,
-        "total_words": 9,
+        "coverage": 0.45454545454545453,
+        "total_words": 11,
         "matched_words": 5,
         "hedging_words": 0,
         "financial_positive": 0,
@@ -296,32 +104,224 @@
       }
     },
     {
-      "sentence": "This is Crazy Badge signing off, stay tuned for more market updates!",
+      "sentence": "Let's delve into the past, present, and future of this electrifying company.",
       "sentiment": {
-        "valence": 0.51275,
-        "arousal": 0.5215,
-        "dominance": 0.51225,
+        "valence": 0.6954,
+        "arousal": 0.4612,
+        "dominance": 0.6426000000000001,
         "confidence": 1.0,
         "financial_sentiment": 0.0,
-        "coverage": 0.5714285714285714,
+        "coverage": 0.7142857142857143,
         "total_words": 7,
-        "matched_words": 4,
+        "matched_words": 5,
         "hedging_words": 0,
         "financial_positive": 0,
         "financial_negative": 0
       }
     },
     {
-      "sentence": "\ud83d\udcc8\ud83d\udd0d",
+      "sentence": "Tesla's journey has been nothing short of remarkable.",
+      "sentiment": {
+        "valence": 0.658,
+        "arousal": 0.513,
+        "dominance": 0.5273333333333333,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6,
+        "total_words": 5,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "From revolutionizing the electric vehicle industry to pushing the boundaries of innovation with solar energy and beyond, Tesla has captured the imagination of investors and tech enthusiasts worldwide.",
+      "sentiment": {
+        "valence": 0.6936,
+        "arousal": 0.5664999999999999,
+        "dominance": 0.7112,
+        "confidence": 1.0,
+        "financial_sentiment": 0.058823529411764705,
+        "coverage": 0.5882352941176471,
+        "total_words": 17,
+        "matched_words": 10,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "At the current price of $285.88, Tesla has seen its fair share of volatility.",
+      "sentiment": {
+        "valence": 0.5912000000000001,
+        "arousal": 0.5294,
+        "dominance": 0.5776,
+        "confidence": 1.0,
+        "financial_sentiment": -0.14285714285714285,
+        "coverage": 0.7142857142857143,
+        "total_words": 7,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 1
+      }
+    },
+    {
+      "sentence": "With a 52-week high of $488.54 and a low of $167.41, the stock has showcased its ability to make market watchers buckle up for a wild ride.",
+      "sentiment": {
+        "valence": 0.5897,
+        "arousal": 0.45489999999999997,
+        "dominance": 0.48740000000000006,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.8333333333333334,
+        "total_words": 12,
+        "matched_words": 10,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The price change of 47.32% over the past year is a testament to the roller-coaster nature of Tesla's stock.",
+      "sentiment": {
+        "valence": 0.6228750000000001,
+        "arousal": 0.46099999999999997,
+        "dominance": 0.5467500000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.8888888888888888,
+        "total_words": 9,
+        "matched_words": 8,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Looking at the technical indicators, the latest MACD value of -1.11 and RSI of 58.37 suggest a mixed sentiment among traders.",
+      "sentiment": {
+        "valence": 0.6466000000000001,
+        "arousal": 0.4680000000000001,
+        "dominance": 0.6275999999999999,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.4166666666666667,
+        "total_words": 12,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "The negative MACD indicates potential bearish momentum, while the RSI hovers in the neutral territory, hinting at a possible consolidation phase.",
+      "sentiment": {
+        "valence": 0.5692222222222222,
+        "arousal": 0.4627777777777778,
+        "dominance": 0.5407777777777778,
+        "confidence": 1.0,
+        "financial_sentiment": -0.07142857142857142,
+        "coverage": 0.6428571428571429,
+        "total_words": 14,
+        "matched_words": 9,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 2
+      }
+    },
+    {
+      "sentence": "A nugget of interesting information about Tesla?",
+      "sentiment": {
+        "valence": 0.7646666666666667,
+        "arousal": 0.47866666666666663,
+        "dominance": 0.5966666666666667,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.75,
+        "total_words": 4,
+        "matched_words": 3,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Did you know that the company's Gigafactory in Shanghai is the first wholly foreign-owned car plant in China, marking a significant milestone in Tesla's global expansion efforts?",
+      "sentiment": {
+        "valence": 0.6911818181818182,
+        "arousal": 0.45336363636363636,
+        "dominance": 0.6334545454545455,
+        "confidence": 1.0,
+        "financial_sentiment": 0.058823529411764705,
+        "coverage": 0.6470588235294118,
+        "total_words": 17,
+        "matched_words": 11,
+        "hedging_words": 0,
+        "financial_positive": 1,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "As we gaze into the future, Tesla's ambitious plans for new vehicle models, increased production capacity, and advancements in autonomous driving technology continue to fuel investor optimism.",
+      "sentiment": {
+        "valence": 0.7118461538461538,
+        "arousal": 0.5721538461538462,
+        "dominance": 0.7090000000000001,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.6842105263157895,
+        "total_words": 19,
+        "matched_words": 13,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Keep an eye on Tesla as it navigates the ever-changing landscape of the automotive and renewable energy sectors.",
+      "sentiment": {
+        "valence": 0.7128,
+        "arousal": 0.3964,
+        "dominance": 0.568,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5,
+        "total_words": 10,
+        "matched_words": 5,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "That's all for now, folks!",
       "sentiment": {
         "valence": 0.5,
         "arousal": 0.5,
         "dominance": 0.5,
-        "confidence": 1,
-        "financial_sentiment": 0,
-        "coverage": 0,
-        "total_words": 0,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.0,
+        "total_words": 2,
         "matched_words": 0,
+        "hedging_words": 0,
+        "financial_positive": 0,
+        "financial_negative": 0
+      }
+    },
+    {
+      "sentence": "Stay tuned for more updates on Tesla and remember, Crazy Badge has got your back when it comes to all things finance and investing.",
+      "sentiment": {
+        "valence": 0.5447142857142857,
+        "arousal": 0.43742857142857144,
+        "dominance": 0.5041428571428571,
+        "confidence": 1.0,
+        "financial_sentiment": 0.0,
+        "coverage": 0.5384615384615384,
+        "total_words": 13,
+        "matched_words": 7,
         "hedging_words": 0,
         "financial_positive": 0,
         "financial_negative": 0
