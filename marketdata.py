@@ -1,9 +1,25 @@
 #!/usr/bin/env python3
 """
-Improved Market Data Module for Crazy Stock Badges Project
+Market Data Module for Crazy Stock Badges Project
 
 This module handles fetching stock data, performing technical analysis,
-and generating stock reports using the OpenRouter API.
+and generating stock reports using the OpenRouter API ang GPT3.5.
+
+The prompt which generates the report is embedded here. 
+
+Data structures for the finance data are held in pandas DataFrames.
+
+The closing daily prices are used to calculate the following technical indicators:
+- Moving Averages (SMA, EMA)   
+- RSI (Relative Strength Index)
+- MACD (Moving Average Convergence Divergence)
+- Bollinger Bands
+- ATR (Average True Range)
+- Sentiment Analysis
+
+Using this data it is also possible to plot 2-D graphs, this was tried, but later removed to focus on the 3-D models.
+
+The sentiment analysis is done using the SentimentAnalyzer class, which uses the OpenRouter API to get sentiment data.
 
 Version 1.0 - Cline implementation for Martin East - Based on original requirements for market data fetching and analysis - Apr 13, 2025.
 Version 1.1 - Martin East - Revew and tidy code, reduce complexity, remove graphing - Apr 14, 2025.

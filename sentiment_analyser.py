@@ -2,11 +2,10 @@
 """
 Improved Sentiment Analysis Module for Crazy Stock Badges Project
 
-This module provides enhanced sentiment analysis capabilities for analyzing
+This class provides enhanced sentiment analysis capabilities for analyzing
 stock reports and extracting emotional dimensions using the NRC VAD lexicon.
 
 Version 1.0 - Cline implementation for Martin East - Based on original requirements for sentiment analysis of stock reports - Apr 13, 2025.
-Version 1.1 - Martin East - Add complete get_summary function - Apr 13, 2025.
 """
 
 import os

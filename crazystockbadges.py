@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-Main command line interface for Crazy Stock Badges Project
+Main command line interface for Crazy Stock Badges Project.
 
-This module provides a friendly, interactive command-line interface for the
-Crazy Stock Badges project, allowing users to generate 3D printable badges
-based on stock market data.
+Please see the individual code blocks for version changes over time.
 
-Version 1.0 - Cline implementation for Martin East - Based on original requirements for command-line interface - Apr 13, 2025.
-Version 1.1 - Martin East - Strip unnecessary error checking and simplify -  Apr 14, 2025.
-Version 2.0 - Martin East - Simplify, removed unecessary functions and added docstrings - Apr 14, 2025.
+This is an interactive command-line interface for the
+Crazy Stock Badges project.
+
+This file also includes the genetic algorithm for generating the 3D badge.
+
+See Version history changes for individual functions below.
+
 """
 import os
 import argparse
@@ -68,8 +70,8 @@ class CrazyStockBadge:
                            help='Number of generations for the genetic algorithm (default: 10)')
         self.parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], 
                            default='INFO', help='Set logging level (default: INFO)')
-        self.parser.add_argument('--visualize-ga', action='store_true',
-                           help='Visualize genetic algorithm results')
+        self.parser.add_argument('--visualise-ga', action='store_true',
+                           help='Visualise genetic algorithm results')
         
         # Parse the arguments
         self.args = self.parser.parse_args()
@@ -242,7 +244,8 @@ class CrazyStockBadge:
         Generate 3D badge using genetic algorithm with focus on complexity and craziness.
         
         Version 2.0: Cline refactor for Martin East - refactor this function after changes to badge_factory.py.
-        Attribution: Cline implementation for Martin East - Complexity-focused badge generation - Apr 17, 2025
+        Version 2.1: Cline implementation for Martin East - Complexity-focused badge generation - Apr 17, 202
+        Version 2.1: Martin East  - Tune hyperparameters to increase population health over time - Apr 25, 2025
         """
         self.logger.info("Generating 3D badge using genetic algorithm with complexity metrics")
         
