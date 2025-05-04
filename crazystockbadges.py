@@ -69,7 +69,7 @@ class CrazyStockBadge:
         self.parser.add_argument('--ga-generations', type=int, default=10,
                            help='Number of generations for the genetic algorithm (default: 10)')
         self.parser.add_argument('--log-level', type=str, choices=['DEBUG', 'INFO', 'WARN', 'ERROR'], 
-                           default='INFO', help='Set logging level (default: INFO)')
+                           default='WARN', help='Set logging level (default: WARN)')
         self.parser.add_argument('--visualise-ga', action='store_true',
                            help='Visualise genetic algorithm results')
         

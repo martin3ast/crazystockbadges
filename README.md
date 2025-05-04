@@ -38,7 +38,7 @@ This can also be set with `OPENROUTER_API_KEY` environment variable.
 Basic interactive usage, the program will prompt for a stock ticker and ask if you want to see a market report.
 
 ```bash
-python crazystockbadges.py --log-level=WARN
+python crazystockbadges.py 
 ```
 
 ### Command Line Options
