@@ -3,7 +3,7 @@
 Market Data Module for Crazy Stock Badges Project
 
 This module handles fetching stock data, performing technical analysis,
-and generating stock reports using the OpenRouter API ang GPT3.5.
+and generating stock reports using the OpenRouter API and GPT.
 
 The prompt which generates the report is embedded here. 
 
@@ -38,18 +38,21 @@ import logging
 from pathlib import Path
 import sys
 from sentiment_analyser import SentimentAnalyzer
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Get logger
 logger = logging.getLogger('market_data')
 
 # Cache directory for storing fetched data
-CACHE_DIR = Path("./cache")
+CACHE_DIR = Path(os.getenv('CACHE_DIR', './cache'))
 CACHE_DIR.mkdir(exist_ok=True) 
 
-# **Fix this before pushing to GitHUB**
-# Default OpenRouter API key - should be overridden with environment variable
-DEFAULT_API_KEY = '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'
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+# Configuration from environment variables
+DEFAULT_API_KEY = os.getenv('OPENROUTER_API_KEY')
+OPENROUTER_API_URL = os.getenv('OPENROUTER_API_URL', 'https://openrouter.ai/api/v1/chat/completions')
 
 
 class MarketDataManager:
@@ -82,6 +85,52 @@ class MarketDataManager:
         self.ticker = ticker
         self.period = period
         self.report = None
+    
+    @staticmethod
+    def validate_ticker(ticker):
+        """
+        Validate if a stock ticker symbol exists using yfinance.
+        
+        Args:
+            ticker (str): Stock ticker symbol to validate
+            
+        Returns:
+            dict: {'valid': bool, 'name': str or None, 'error': str or None}
+        """
+        if not ticker or not isinstance(ticker, str):
+            return {'valid': False, 'name': None, 'error': 'Ticker must be a non-empty string'}
+        
+        # Clean ticker: remove whitespace and convert to uppercase
+        ticker = ticker.strip().upper()
+        
+        # Basic length check only
+        if len(ticker) == 0 or len(ticker) > 15:
+            return {'valid': False, 'name': None, 'error': 'Ticker must be 1-15 characters long'}
+        
+        try:
+            # Try to get ticker info from yfinance
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            
+            # Check if we got valid stock info
+            if not info or len(info) < 3:  # yfinance returns minimal dict for invalid tickers
+                return {'valid': False, 'name': None, 'error': f'Ticker "{ticker}" not found'}
+            
+            # Additional validation - check for common indicators of valid stock data
+            has_price = any(key in info for key in ['regularMarketPrice', 'previousClose', 'currentPrice'])
+            has_name = 'longName' in info or 'shortName' in info
+            
+            if not (has_price or has_name):
+                return {'valid': False, 'name': None, 'error': f'Ticker "{ticker}" appears to be invalid or delisted'}
+            
+            # Get company name if available
+            company_name = info.get('longName') or info.get('shortName') or ticker
+            
+            return {'valid': True, 'name': company_name, 'error': None}
+            
+        except Exception as e:
+            logger.warning(f"Error validating ticker {ticker}: {e}")
+            return {'valid': False, 'name': None, 'error': f'Unable to validate ticker "{ticker}": {str(e)}'}
     
     def fetch_stock_data(self, ticker=None, period=None, use_cache=True):
         """
@@ -187,17 +236,22 @@ class MarketDataManager:
         
         try:
             # Moving Averages
+            logger.info("Calculating moving averages...")
             self.data['SMA_20'] = ta.trend.sma_indicator(self.data['Close'], window=20)
             self.data['SMA_50'] = ta.trend.sma_indicator(self.data['Close'], window=50)
             self.data['EMA_20'] = ta.trend.ema_indicator(self.data['Close'], window=20)
             
             # RSI
+            logger.info("Calculating RSI...")
             self.data['RSI'] = ta.momentum.rsi(self.data['Close'], window=14)
             
             # MACD
+            logger.info("Calculating MACD...")
             self.data['MACD'] = ta.trend.macd(self.data['Close'])
             self.data['MACD_Signal'] = ta.trend.macd_signal(self.data['Close'])
             self.data['MACD_Hist'] = ta.trend.macd_diff(self.data['Close'])
+            
+            logger.info(f"Technical analysis completed. DataFrame columns: {list(self.data.columns)}")
             
             # Bollinger Bands
             self.data['BB_High'] = ta.volatility.bollinger_hband(self.data['Close'])
@@ -215,10 +269,10 @@ class MarketDataManager:
     
     def get_summary_stats(self):
         """
-        Get summary statistics for the stock data.
+        Get comprehensive summary statistics and technical analysis for the stock data.
         
         Returns:
-            dict: Summary statistics
+            dict: Comprehensive technical analysis and market statistics
         """
         if self.data is None:
             raise ValueError("No data available. Call fetch_stock_data first.")
@@ -226,14 +280,10 @@ class MarketDataManager:
         # Get the most recent data point
         latest = self.data.iloc[-1]
         
-        # Calculate year high/low
+        # Basic price data
+        latest_close = latest['Close']
         high = self.data['High'].max()
         low = self.data['Low'].min()
-        
-        # Get latest technical indicators
-        latest_close = latest['Close']
-        latest_macd = latest.get('MACD', 'N/A')
-        latest_rsi = latest.get('RSI', 'N/A')
         
         # Calculate price change
         first_close = self.data['Close'].iloc[0]
@@ -243,25 +293,126 @@ class MarketDataManager:
         returns = self.data['Close'].pct_change().dropna()
         volatility = returns.std() * 100
         
+        # Technical indicators
+        latest_rsi = latest.get('RSI', None)
+        latest_macd = latest.get('MACD', None)
+        latest_macd_signal = latest.get('MACD_Signal', None)
+        latest_macd_hist = latest.get('MACD_Hist', None)
+        
+        # Moving averages
+        latest_sma_20 = latest.get('SMA_20', None)
+        latest_sma_50 = latest.get('SMA_50', None)
+        latest_ema_20 = latest.get('EMA_20', None)
+        
+        # Bollinger Bands
+        latest_bb_high = latest.get('BB_High', None)
+        latest_bb_low = latest.get('BB_Low', None)
+        latest_bb_mid = latest.get('BB_Mid', None)
+        
+        # ATR (Average True Range)
+        latest_atr = latest.get('ATR', None)
+        
+        # Calculate additional metrics
+        volume_avg = self.data['Volume'].mean() if 'Volume' in self.data.columns else None
+        latest_volume = latest.get('Volume', None)
+        
+        # Price position relative to range
+        price_position = ((latest_close - low) / (high - low)) * 100 if high != low else 50
+        
+        # RSI signal
+        rsi_signal = "Neutral"
+        if latest_rsi is not None:
+            if latest_rsi > 70:
+                rsi_signal = "Overbought"
+            elif latest_rsi < 30:
+                rsi_signal = "Oversold"
+            elif latest_rsi > 60:
+                rsi_signal = "Bullish"
+            elif latest_rsi < 40:
+                rsi_signal = "Bearish"
+        
+        # MACD signal
+        macd_signal = "Neutral"
+        if latest_macd is not None and latest_macd_signal is not None:
+            if latest_macd > latest_macd_signal:
+                macd_signal = "Bullish"
+            else:
+                macd_signal = "Bearish"
+        
+        # Moving average trend
+        ma_trend = "Neutral"
+        if latest_sma_20 is not None and latest_sma_50 is not None:
+            if latest_sma_20 > latest_sma_50:
+                ma_trend = "Bullish" if latest_close > latest_sma_20 else "Mixed"
+            else:
+                ma_trend = "Bearish" if latest_close < latest_sma_20 else "Mixed"
+        
+        # Overall trend based on price vs moving averages
+        overall_trend = "Neutral"
+        if latest_sma_20 is not None:
+            if latest_close > latest_sma_20:
+                overall_trend = "Bullish"
+            else:
+                overall_trend = "Bearish"
+        
+        # Support and resistance levels (simplified)
+        recent_data = self.data.tail(20)  # Last 20 days
+        support_level = recent_data['Low'].min()
+        resistance_level = recent_data['High'].max()
+        
         return {
+            # Basic info
             'ticker': self.ticker,
+            'data_start': self.data.index[0].strftime('%Y-%m-%d'),
+            'data_end': self.data.index[-1].strftime('%Y-%m-%d'),
+            
+            # Price action
             'latest_price': latest_close,
             'high': high,
             'low': low,
             'price_change_pct': price_change,
+            'price_position': price_position,
             'volatility_pct': volatility,
-            'latest_macd': latest_macd,
-            'latest_rsi': latest_rsi,
-            'data_start': self.data.index[0].strftime('%Y-%m-%d'),
-            'data_end': self.data.index[-1].strftime('%Y-%m-%d')
+            'support_level': support_level,
+            'resistance_level': resistance_level,
+            
+            # Volume
+            'latest_volume': latest_volume,
+            'volume_avg': volume_avg,
+            
+            # Technical indicators - raw values
+            'rsi': latest_rsi,
+            'macd': latest_macd,
+            'macd_signal_line': latest_macd_signal,
+            'macd_histogram': latest_macd_hist,
+            'sma_20': latest_sma_20,
+            'sma_50': latest_sma_50,
+            'ema_20': latest_ema_20,
+            'bb_upper': latest_bb_high,
+            'bb_lower': latest_bb_low,
+            'bb_middle': latest_bb_mid,
+            'atr': latest_atr,
+            
+            # Signals and analysis
+            'rsi_signal': rsi_signal,
+            'macd_signal': macd_signal,
+            'ma_trend': ma_trend,
+            'overall_trend': overall_trend,
+            
+            # Trading levels
+            'price_vs_sma20': ((latest_close / latest_sma_20 - 1) * 100) if latest_sma_20 else None,
+            'price_vs_sma50': ((latest_close / latest_sma_50 - 1) * 100) if latest_sma_50 else None,
+            'bb_position': None if not all([latest_bb_high, latest_bb_low]) else 
+                          ((latest_close - latest_bb_low) / (latest_bb_high - latest_bb_low)) * 100
         }
       
-    def generate_report(self, prompt_template=None):
+    def generate_report(self, prompt_template=None, output_file=None):
         """
-        Generate a stock report using OpenRouter.ai API and GPT 3.5 model.
+        Generate a stock report using OpenRouter.ai API and GPT model.
         
         Args:
             prompt_template (str, optional): Custom prompt template
+            output_file (str, optional): Path to save report file. Defaults to "./stock_report"
             
         Returns:
             str: Generated report text
@@ -284,7 +435,7 @@ class MarketDataManager:
                 "Also include the current price is ${latest_price:.2f}."
                 "The 52-week high is ${high:.2f} and the low is ${low:.2f}. "
                 "The price has changed by {price_change_pct:.2f}% over the period. "
-                "The latest MACD value is {latest_macd:.2f} and RSI is {latest_rsi:.2f}. "
+                "The latest MACD value is {macd} and RSI is {rsi}. "
                 "Make it short, 300 words."
             )
         
@@ -298,7 +449,7 @@ class MarketDataManager:
         }
         
         json_data = {
-            'model': 'openai/gpt-3.5-turbo',
+            'model': 'openai/gpt-4.1-mini',
             'messages': [
                 {'role': 'system', 'content': 'You are a financial news TV anchor.'},
                 {'role': 'user', 'content': prompt}
@@ -322,7 +473,8 @@ class MarketDataManager:
                 self.report = response.json()['choices'][0]['message']['content'].strip()
                 
                 # Save the report to a file
-                with open("./stock_report", "w") as f:
+                report_file = output_file or "./stock_report"
+                with open(report_file, "w") as f:
                     f.write(self.report)
                 
                 logger.info("Report generated and saved")

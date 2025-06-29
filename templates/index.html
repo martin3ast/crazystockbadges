@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crazy Stock Badges - 3D Badge Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Crazy Stock Badges</h1>
+            <p>Generate 3D printable badges from stock market data using genetic algorithms</p>
+        </header>
+
+        <main>
+            <!-- Input Section -->
+            <section id="input-section" class="card">
+                <h2>📈 Stock Configuration</h2>
+                <form id="badge-form">
+                    <div class="form-group">
+                        <label for="ticker">Stock Ticker Symbol:</label>
+                        <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL, TSLA, MSFT" maxlength="10" required>
+                        <div class="suggestions" id="ticker-suggestions">
+                            <div class="suggestion-item" data-ticker="AAPL">AAPL - Apple Inc.</div>
+                            <div class="suggestion-item" data-ticker="MSFT">MSFT - Microsoft Corporation</div>
+                            <div class="suggestion-item" data-ticker="GOOGL">GOOGL - Alphabet Inc.</div>
+                            <div class="suggestion-item" data-ticker="AMZN">AMZN - Amazon.com Inc.</div>
+                            <div class="suggestion-item" data-ticker="TSLA">TSLA - Tesla Inc.</div>
+                            <div class="suggestion-item" data-ticker="META">META - Meta Platforms Inc.</div>
+                            <div class="suggestion-item" data-ticker="NVDA">NVDA - NVIDIA Corporation</div>
+                            <div class="suggestion-item" data-ticker="JPM">JPM - JPMorgan Chase & Co.</div>
+                            <div class="suggestion-item" data-ticker="V">V - Visa Inc.</div>
+                            <div class="suggestion-item" data-ticker="WMT">WMT - Walmart Inc.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="period">Time Period:</label>
+                            <select id="period" name="period">
+                                <option value="1y">1 Year</option>
+                                <option value="6mo">6 Months</option>
+                                <option value="3mo">3 Months</option>
+                                <option value="1mo">1 Month</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="generations">GA Generations:</label>
+                            <input type="number" id="generations" name="generations" min="1" max="50" value="10">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="generate-btn" class="btn btn-primary">
+                        🚀 Generate Badge
+                    </button>
+                </form>
+            </section>
+
+            <!-- Progress Section -->
+            <section id="progress-section" class="card" style="display: none;">
+                <h2>⚙️ Generation Progress</h2>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">0%</div>
+                </div>
+                <div id="status-text" class="status-text">Initializing...</div>
+                <div id="generation-info" class="generation-info"></div>
+                
+                <!-- Fitness Chart -->
+                <div id="fitness-chart-container" style="display: none;">
+                    <h3>Fitness Evolution</h3>
+                    <canvas id="fitness-chart" width="400" height="200"></canvas>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="card" style="display: none;">
+                <h2>📊 Results</h2>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="viewer">🎯 3D Preview</button>
+                    <button class="tab-button" data-tab="report">📄 Stock Report</button>
+                    <button class="tab-button" data-tab="sentiment">💭 Sentiment Analysis</button>
+                    <button class="tab-button" data-tab="stats">📈 Market Stats</button>
+                    <button class="tab-button" data-tab="downloads">⬇️ Downloads</button>
+                </div>
+                
+                <!-- Tab Content -->
+                <div id="viewer-tab" class="tab-content active">
+                    <div class="viewer-container">
+                        <h3>🎯 3D Badge Preview</h3>
+                        <div id="threejs-container" class="threejs-container">
+                            <div id="loading-3d" class="loading-3d">
+                                <div class="loading"></div>
+                                <p>Loading 3D model...</p>
+                            </div>
+                        </div>
+                        <div class="viewer-controls">
+                            <p><strong>Controls:</strong> Left click + drag to rotate, scroll to zoom, right click + drag to pan</p>
+                            <button id="autorotate-btn" class="btn btn-secondary" onclick="toggleAutoRotate()" style="display: none;">⏸️ Pause Auto-Rotate</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="report-tab" class="tab-content">
+                    <div id="stock-report" class="report-content"></div>
+                </div>
+                
+                <div id="sentiment-tab" class="tab-content">
+                    <div id="sentiment-analysis" class="sentiment-content"></div>
+                </div>
+                
+                <div id="stats-tab" class="tab-content">
+                    <div id="market-stats" class="stats-content"></div>
+                </div>
+                
+                <div id="downloads-tab" class="tab-content">
+                    <div class="download-section">
+                        <h3>📁 Generated Files</h3>
+                        <div class="download-buttons">
+                            <button id="download-scad" class="btn btn-secondary">
+                                📄 Download SCAD File
+                            </button>
+                            <button id="download-stl" class="btn btn-secondary">
+                                🎯 Download STL File
+                            </button>
+                            <button id="download-report" class="btn btn-secondary">
+                                📊 Download Report
+                            </button>
+                        </div>
+                        <div class="file-info">
+                            <p><strong>SCAD File:</strong> OpenSCAD 3D model file that can be opened in OpenSCAD for viewing and editing, or exported to STL for 3D printing.</p>
+                            <p><strong>STL File:</strong> 3D printable file format compatible with most 3D printers and slicing software.</p>
+                            <p><strong>Report:</strong> Text file containing the generated stock market analysis report.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Crazy Stock Badges - Generate 3D badges from market data | 
+               <a href="https://openscad.org/" target="_blank">OpenSCAD</a> required for 3D viewing</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

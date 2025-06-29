@@ -20,6 +20,7 @@ import re
 import logging
 import random
 import statistics
+import warnings
 from collections import defaultdict
 from colorama import init, Fore, Style
 import matplotlib.pyplot as plt
@@ -252,6 +253,9 @@ class CrazyStockBadge:
         # Define gene space
         gene_space = self._create_gene_space()
         
+        # Filter out the warning about save_solutions parameter
+        warnings.filterwarnings("ignore", message="Use the 'save_solutions' parameter with caution")
+        
         # Create pyGAD instance
         self.ga_instance = pygad.GA(
             num_generations=self.ga_generations,
@@ -318,9 +322,9 @@ class CrazyStockBadge:
         self.logger.info(f"Badge generation complete. Output file: {output_file}")
 
         
-        # Generate visualization if requested
-        if self.args.visualize_ga:
-            self.visualize_ga_results()
+        # Generate visualisation if requested
+        if self.args.visualise_ga:
+            self.visualise_ga_results()
         
 
     def get_text_content(self, text_type, sentiment):
@@ -624,15 +628,15 @@ class CrazyStockBadge:
             print(f"{Fore.BLUE} ... Best fitness: {best_fitness:.2f} {Style.RESET_ALL}")
 
 
-    def visualize_ga_results(self):
+    def visualise_ga_results(self):
         """
         Create and display plots for the genetic algorithm results.
         
-        Version 1.0: Cline implementation for Martin East - Visualization of GA results - Apr 27, 2025
-        Version 1.1: Cline bugfix for Martin East - Fixed visualization implementation - Apr 27, 2025
+        Version 1.0: Cline implementation for Martin East - Visualisation of GA results - Apr 27, 2025
+        Version 1.1: Cline bugfix for Martin East - Fixed visualisation implementation - Apr 27, 2025
         Version 1.2: Cline implementation for Martin East - Added fitness statistics plotting - Apr 28, 2025
         """
-        self.logger.info("Generating visualization of GA results")
+        self.logger.info("Generating visualisation of GA results")
         
         # Create plots directory if it doesn't exist
         plots_dir = "./plots"
@@ -655,7 +659,7 @@ class CrazyStockBadge:
         self.plot_fitness_statistics(plots_dir)
         
         self.logger.info(f"GA plots saved to {plots_dir}")
-        print(f"{Fore.GREEN}GA visualization plots saved to {plots_dir}{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}GA visualisation plots saved to {plots_dir}{Style.RESET_ALL}")
     
     def plot_fitness_statistics(self, plots_dir):
         """

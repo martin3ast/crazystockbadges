@@ -32,6 +32,7 @@ import os
 import math
 import random
 import logging
+import subprocess
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -40,6 +41,13 @@ import numpy as np
 import pandas as pd
 from solid import *
 from solid.utils import *
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Configuration
+OPENSCAD_PATH = os.getenv('OPENSCAD_PATH', 'openscad')
 
 # Get logger
 logger = logging.getLogger('badge_factory')
@@ -836,6 +844,117 @@ class Badge3DModel(ABC):
         logger.info(f"Model saved to {filepath}")
         
         return str(filepath)
+    
+    @staticmethod
+    def test_openscad():
+        """Test if OpenSCAD is available and working."""
+        try:
+            result = subprocess.run([OPENSCAD_PATH, '--version'], 
+                                  capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                logger.info(f"OpenSCAD found: {result.stdout.strip()}")
+                return True
+            else:
+                logger.error(f"OpenSCAD test failed: {result.stderr}")
+                return False
+        except Exception as e:
+            logger.error(f"OpenSCAD test error: {e}")
+            return False
+    
+    def save_to_stl_async(self, filename=None):
+        """
+        Start STL generation in background without blocking.
+        Returns immediately, STL file will be available later.
+        """
+        import threading
+        
+        def generate_stl():
+            try:
+                result = self.save_to_stl(filename)
+                if result:
+                    logger.info(f"Async STL generation completed: {result}")
+                else:
+                    logger.warning("Async STL generation failed")
+            except Exception as e:
+                logger.error(f"Async STL generation error: {e}")
+        
+        thread = threading.Thread(target=generate_stl, daemon=True)
+        thread.start()
+        logger.info("STL generation started in background")
+        return True
+    
+    def save_to_stl(self, filename=None):
+        """
+        Save the model to an STL file for 3D visualization.
+        Requires OpenSCAD to be installed on the system.
+        
+        Args:
+            filename (str): Output filename (without extension)
+            
+        Returns:
+            str: Path to the saved STL file, or None if conversion failed
+        """
+        if self.final_model is None:
+            self.combine_models()
+        
+        if filename is None:
+            filename = f"{self.ticker_symbol}_badge"
+        
+        # Remove .stl extension if provided
+        if filename.endswith('.stl'):
+            filename = filename[:-4]
+        
+        # Ensure directories exist
+        scad_models_dir = Path("./scad_models")
+        stl_models_dir = Path("./stl_models")
+        scad_models_dir.mkdir(exist_ok=True)
+        stl_models_dir.mkdir(exist_ok=True)
+        
+        # File paths
+        scad_path = scad_models_dir / f"{filename}.scad"
+        stl_path = stl_models_dir / f"{filename}.stl"
+        
+        try:
+            # Test OpenSCAD first
+            if not self.test_openscad():
+                logger.error("OpenSCAD test failed, skipping STL generation")
+                return None
+            
+            # First save to SCAD
+            scad_render_to_file(self.final_model, scad_path)
+            logger.info(f"SCAD model saved to {scad_path}")
+            
+            # Convert SCAD to STL using OpenSCAD with optimization flags
+            cmd = [
+                OPENSCAD_PATH,
+                '-o', str(stl_path),
+                '--render',  # Force render mode
+                '--quiet',   # Reduce output
+                str(scad_path)
+            ]
+            logger.info(f"Running OpenSCAD command: {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            
+            if result.returncode == 0:
+                logger.info(f"STL model saved to {stl_path}")
+                return str(stl_path)
+            else:
+                logger.error(f"OpenSCAD conversion failed with return code {result.returncode}")
+                logger.error(f"STDOUT: {result.stdout}")
+                logger.error(f"STDERR: {result.stderr}")
+                return None
+                
+        except subprocess.TimeoutExpired:
+            logger.error(f"OpenSCAD conversion timed out after 300 seconds")
+            logger.error(f"Command was: {' '.join(cmd)}")
+            return None
+        except FileNotFoundError:
+            logger.error(f"OpenSCAD not found at path: {OPENSCAD_PATH}")
+            logger.error("STL export requires OpenSCAD installation. Check OPENSCAD_PATH in .env file")
+            return None
+        except Exception as e:
+            logger.error(f"Error during STL export: {e}")
+            return None
 
 class DiscBadge(Badge3DModel):
     """
