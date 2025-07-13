@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickr Toys - Transform Stock Data into 3D Art</title>
+    <link rel="stylesheet" href="/static/landing.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Particle Background -->
+    <div id="particles-container"></div>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="hero-section">
+            <div class="logo-container">
+                <div class="logo">
+                    <span class="logo-text">Tickr</span>
+                    <span class="logo-accent">Toys</span>
+                </div>
+                <div class="tagline">Where Finance Meets Fabrication</div>
+            </div>
+            
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Transform Your <span class="gradient-text">Stock Data</span><br>
+                    Into <span class="gradient-text">3D Masterpieces</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Experience the future of financial visualization. Our AI-powered genetic algorithms 
+                    analyze market data, sentiment, and technical indicators to create unique, 
+                    3D-printable badges that tell your investment story.
+                </p>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Unique Designs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">Technical Indicators</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">3D</div>
+                        <div class="stat-label">Print Ready</div>
+                    </div>
+                </div>
+                
+                <button class="cta-button" onclick="startExperience()">
+                    <span>Start Creating</span>
+                    <div class="button-glow"></div>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Process Section -->
+        <section class="process-section">
+            <h2 class="section-title">How It Works</h2>
+            <div class="process-grid">
+                <div class="process-step" data-step="1">
+                    <div class="step-icon">📈</div>
+                    <h3>Choose Your Stock</h3>
+                    <p>Enter any stock ticker symbol and select your analysis period. We support international markets and indices.</p>
+                </div>
+                
+                <div class="process-step" data-step="2">
+                    <div class="step-icon">🧬</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our genetic algorithms analyze price movements, technical indicators, and market sentiment to create unique design parameters.</p>
+                </div>
+                
+                <div class="process-step" data-step="3">
+                    <div class="step-icon">🎯</div>
+                    <h3>3D Generation</h3>
+                    <p>Watch as your financial data transforms into stunning 3D models with terrain based on volatility, trends, and market signals.</p>
+                </div>
+                
+                <div class="process-step" data-step="4">
+                    <div class="step-icon">🖨️</div>
+                    <h3>Print & Display</h3>
+                    <p>Download your personalized badge as STL files ready for 3D printing, or view the interactive 3D preview online.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Features Section -->
+        <section class="features-section">
+            <h2 class="section-title">Powered by Advanced Analytics</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Genetic Algorithms</h3>
+                    <p>Evolutionary optimization creates millions of design variations to find the perfect representation of your stock's personality.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Technical Analysis</h3>
+                    <p>RSI, MACD, Bollinger Bands, moving averages, and more - all visualized in stunning 3D topography.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💭</div>
+                    <h3>Sentiment AI</h3>
+                    <p>Natural language processing analyzes market reports and news to capture the emotional landscape of your investment.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Real-Time Data</h3>
+                    <p>Live market feeds ensure your badge reflects the most current price action and trading patterns.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Infinite Variety</h3>
+                    <p>Every stock tells a different story. Disc, rectangular, or triangular bases with unique terrain and styling.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Multi-threaded processing and intelligent caching deliver your custom badge in minutes, not hours.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to See Your Investments Come to Life?</h2>
+                <p>Join thousands of traders and investors who've discovered the art of financial visualization</p>
+                <button class="cta-button secondary" onclick="startExperience()">
+                    <span>Create Your First Badge</span>
+                    <div class="button-glow"></div>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-text">Tickr</span>
+                    <span class="logo-accent">Toys</span>
+                </div>
+                <p>Transforming financial data into tangible art since 2024</p>
+                <div class="footer-links">
+                    <a href="#" onclick="startExperience()">Get Started</a>
+                    <a href="https://openscad.org/" target="_blank">OpenSCAD</a>
+                    <a href="https://github.com/anthropics/claude-code" target="_blank">Built with Claude</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/particles.js"></script>
+</body>
+</html>

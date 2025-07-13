@@ -1048,7 +1048,7 @@ class BadgeGenerator {
     }
     
     async pollForSTL() {
-        const maxPolls = 30; // Poll for up to 5 minutes (30 * 10 seconds)
+        const maxPolls = 60; // Poll for up to 10 minutes (30 * 10 seconds)
         let pollCount = 0;
         
         const poll = async () => {
@@ -1056,10 +1056,15 @@ class BadgeGenerator {
                 const response = await fetch(`/api/stl-status/${this.currentSessionId}`);
                 const data = await response.json();
                 
+                console.log('STL status check:', data);
+                
                 if (data.ready) {
+                    console.log('STL is ready, loading 3D model...');
                     // STL is ready, reload the 3D viewer
                     await this.load3DModel();
                     return;
+                } else {
+                    console.log('STL not ready yet, will retry...');
                 }
                 
                 pollCount++;
@@ -1209,6 +1214,7 @@ class BadgeGenerator {
             
             fetch(modelUrl)
                 .then(response => {
+                    console.log('Model fetch response status:', response.status);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }

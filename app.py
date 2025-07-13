@@ -147,6 +147,7 @@ class WebBadgeGenerator:
             
             # Save STL file for 3D visualization (async to avoid blocking)
             try:
+                logger.info(f"Starting STL generation for session {self.session_id}, filename: {session_filename}")
                 self.best_badge.save_to_stl_async(session_filename)
                 logger.info("STL generation started in background")
             except Exception as e:
@@ -288,8 +289,13 @@ class WebBadgeGenerator:
         ]
 
 @app.route('/')
+def landing():
+    """Landing page"""
+    return render_template('landing.html')
+
+@app.route('/generate')
 def index():
-    """Main page"""
+    """Main badge generation page"""
     return render_template('index.html')
 
 @app.route('/api/validate-ticker', methods=['POST'])
@@ -444,10 +450,25 @@ def get_stl_status(session_id):
     ticker = session['ticker']
     session_filename = f"{session_id}_{ticker}_badge.stl"
     stl_path = f"./stl_models/{session_filename}"
+    
+    logger.info(f"Checking STL file: {stl_path}")
+    logger.info(f"File exists: {os.path.exists(stl_path)}")
+    
     if os.path.exists(stl_path):
-        return jsonify({'ready': True, 'path': stl_path})
+        file_size = os.path.getsize(stl_path)
+        logger.info(f"STL file size: {file_size} bytes")
+        return jsonify({'ready': True, 'path': stl_path, 'size': file_size})
     else:
-        return jsonify({'ready': False})
+        # List files in stl_models directory for debugging
+        try:
+            files = os.listdir('./stl_models')
+            matching_files = [f for f in files if session_id in f]
+            logger.info(f"Files in stl_models: {files[:10]}...")  # Show first 10 files
+            logger.info(f"Files matching session_id {session_id}: {matching_files}")
+        except Exception as e:
+            logger.error(f"Error listing stl_models directory: {e}")
+        
+        return jsonify({'ready': False, 'expected_file': session_filename})
 
 @app.route('/api/model/<session_id>')
 def get_model(session_id):
@@ -460,9 +481,15 @@ def get_model(session_id):
     ticker = session['ticker']
     session_filename = f"{session_id}_{ticker}_badge.stl"
     stl_path = f"./stl_models/{session_filename}"
+    
+    logger.info(f"Serving STL model: {stl_path}")
+    
     if os.path.exists(stl_path):
+        file_size = os.path.getsize(stl_path)
+        logger.info(f"Serving STL file, size: {file_size} bytes")
         return send_file(stl_path, mimetype='application/octet-stream')
     else:
+        logger.error(f"STL file not found: {stl_path}")
         return jsonify({'error': 'STL file not found'}), 404
 
 @app.route('/api/admin/cleanup', methods=['POST'])

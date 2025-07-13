@@ -48,6 +48,7 @@ load_dotenv()
 
 # Configuration
 OPENSCAD_PATH = os.getenv('OPENSCAD_PATH', 'openscad')
+OPENSCAD_TIMEOUT = int(os.getenv('OPENSCAD_TIMEOUT', '600'))
 
 # Get logger
 logger = logging.getLogger('badge_factory')
@@ -933,7 +934,7 @@ class Badge3DModel(ABC):
                 str(scad_path)
             ]
             logger.info(f"Running OpenSCAD command: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=OPENSCAD_TIMEOUT)
             
             if result.returncode == 0:
                 logger.info(f"STL model saved to {stl_path}")
@@ -945,7 +946,7 @@ class Badge3DModel(ABC):
                 return None
                 
         except subprocess.TimeoutExpired:
-            logger.error(f"OpenSCAD conversion timed out after 300 seconds")
+            logger.error(f"OpenSCAD conversion timed out after {OPENSCAD_TIMEOUT} seconds")
             logger.error(f"Command was: {' '.join(cmd)}")
             return None
         except FileNotFoundError:

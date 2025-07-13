@@ -7,16 +7,19 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(ellipse at center, #1a1a1a 0%, #0d0d0d 100%);
     min-height: 100vh;
     color: #e0e0e0;
+    position: relative;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    position: relative;
+    z-index: 1;
 }
 
 /* Header */
@@ -30,6 +33,10 @@ header h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #667eea 0%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 header p {
@@ -54,10 +61,13 @@ header p {
 }
 
 .card h2 {
-    color: #f1c40f;
+    background: linear-gradient(135deg, #667eea 0%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 20px;
     font-size: 1.5rem;
-    border-bottom: 2px solid rgba(241, 196, 15, 0.3);
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
     padding-bottom: 10px;
 }
 
@@ -97,7 +107,7 @@ input[type="text"]:focus,
 input[type="number"]:focus,
 select:focus {
     outline: none;
-    border-color: #f1c40f;
+    border-color: #ffd700;
     box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.2);
 }
 
@@ -131,8 +141,8 @@ select:focus {
 }
 
 .suggestion-item:hover {
-    background-color: rgba(241, 196, 15, 0.1);
-    color: #f1c40f;
+    background-color: rgba(255, 215, 0, 0.1);
+    color: #ffd700;
 }
 
 .suggestion-item:last-child {
@@ -154,8 +164,8 @@ select:focus {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
-    color: #1a1a2e;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     width: 100%;
     font-size: 18px;
     padding: 15px 30px;
@@ -164,7 +174,7 @@ select:focus {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(241, 196, 15, 0.4);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-primary:disabled {
@@ -181,9 +191,9 @@ select:focus {
 }
 
 .btn-secondary:hover {
-    background: rgba(241, 196, 15, 0.1);
-    border-color: #f1c40f;
-    color: #f1c40f;
+    background: rgba(255, 215, 0, 0.1);
+    border-color: #ffd700;
+    color: #ffd700;
 }
 
 /* Progress */
@@ -203,7 +213,7 @@ select:focus {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #f1c40f, #f39c12);
+    background: linear-gradient(90deg, #667eea, #ffd700);
     border-radius: 10px;
     transition: width 0.3s ease;
     width: 0%;
@@ -212,7 +222,7 @@ select:focus {
 .progress-text {
     text-align: center;
     font-weight: 600;
-    color: #f1c40f;
+    color: #ffd700;
 }
 
 .status-text {
@@ -248,8 +258,8 @@ select:focus {
 }
 
 .tab-button.active {
-    color: #f1c40f;
-    border-bottom-color: #f1c40f;
+    color: #ffd700;
+    border-bottom-color: #ffd700;
 }
 
 .tab-button:hover {
@@ -275,7 +285,7 @@ select:focus {
     background: rgba(45, 55, 72, 0.6);
     padding: 20px;
     border-radius: 8px;
-    border-left: 4px solid #f1c40f;
+    border-left: 4px solid #ffd700;
     white-space: pre-wrap;
     line-height: 1.6;
     color: #e0e0e0;
@@ -305,7 +315,7 @@ select:focus {
 }
 
 .sentiment-gauge-title {
-    color: #f1c40f;
+    color: #ffd700;
     margin-bottom: 20px;
     font-size: 1.3rem;
     text-align: center;
@@ -315,7 +325,7 @@ select:focus {
     width: 200px;
     height: 100px;
     position: relative;
-    background: linear-gradient(90deg, #fc8181 0%, #f1c40f 50%, #68d391 100%);
+    background: linear-gradient(90deg, #fc8181 0%, #ffd700 50%, #68d391 100%);
     border-radius: 100px 100px 0 0;
     overflow: hidden;
     margin-bottom: 15px;
@@ -354,7 +364,7 @@ select:focus {
     left: 50%;
     width: 16px;
     height: 16px;
-    background: #f1c40f;
+    background: #ffd700;
     border-radius: 50%;
     transform: translateX(-50%);
     border: 3px solid #1a1a2e;
@@ -363,7 +373,7 @@ select:focus {
 .sentiment-score-text {
     font-size: 2rem;
     font-weight: 700;
-    color: #f1c40f;
+    color: #ffd700;
     margin-bottom: 5px;
 }
 
@@ -424,7 +434,7 @@ select:focus {
 }
 
 .sentiment-progress-text {
-    color: #f1c40f;
+    color: #ffd700;
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -448,12 +458,12 @@ select:focus {
 }
 
 .sentiment-object-viz::-webkit-scrollbar-thumb {
-    background: #f1c40f;
+    background: #ffd700;
     border-radius: 2px;
 }
 
 .sentiment-object-viz::-webkit-scrollbar-thumb:hover {
-    background: #f39c12;
+    background: #ffb347;
 }
 
 .sentiment-object-item {
@@ -462,7 +472,7 @@ select:focus {
     padding: 8px 12px;
     background: rgba(100, 116, 139, 0.1);
     border-radius: 6px;
-    border-left: 3px solid #f1c40f;
+    border-left: 3px solid #ffd700;
     min-height: 0;
     overflow: hidden;
 }
@@ -476,7 +486,7 @@ select:focus {
 }
 
 .sentiment-object-item .value {
-    color: #f1c40f;
+    color: #ffd700;
     flex: 1;
     min-width: 0;
     word-break: break-all;
@@ -490,7 +500,7 @@ select:focus {
     padding: 15px;
     background: rgba(100, 116, 139, 0.1);
     border-radius: 8px;
-    color: #f1c40f;
+    color: #ffd700;
     font-weight: 600;
     font-size: 1.1rem;
 }
@@ -524,12 +534,12 @@ select:focus {
 }
 
 .sentiment-text-value::-webkit-scrollbar-thumb {
-    background: #f1c40f;
+    background: #ffd700;
     border-radius: 2px;
 }
 
 .sentiment-text-value::-webkit-scrollbar-thumb:hover {
-    background: #f39c12;
+    background: #ffb347;
 }
 
 /* Sentiment Insights */
@@ -542,7 +552,7 @@ select:focus {
 }
 
 .sentiment-insights-title {
-    color: #f1c40f;
+    color: #ffd700;
     margin-bottom: 20px;
     font-size: 1.2rem;
     text-align: center;
@@ -560,7 +570,7 @@ select:focus {
     padding: 15px;
     background: rgba(100, 116, 139, 0.1);
     border-radius: 8px;
-    border-left: 4px solid #f1c40f;
+    border-left: 4px solid #ffd700;
     animation: fadeInUp 0.6s ease forwards;
     opacity: 0;
     transform: translateY(20px);
@@ -592,7 +602,7 @@ select:focus {
     background: rgba(45, 55, 72, 0.6);
     padding: 15px;
     border-radius: 8px;
-    border-left: 4px solid #f1c40f;
+    border-left: 4px solid #ffd700;
 }
 
 .sentiment-item h4 {
@@ -603,7 +613,7 @@ select:focus {
 .sentiment-value {
     font-size: 1.2em;
     font-weight: 600;
-    color: #f1c40f;
+    color: #ffd700;
 }
 
 .stats-content {
@@ -617,7 +627,7 @@ select:focus {
     padding: 15px;
     border-radius: 8px;
     text-align: center;
-    border-left: 4px solid #f39c12;
+    border-left: 4px solid #ffb347;
 }
 
 .stat-value {
@@ -667,7 +677,7 @@ select:focus {
 #fitness-chart-container h3 {
     text-align: center;
     margin-bottom: 15px;
-    color: #f1c40f;
+    color: #ffd700;
 }
 
 /* Footer */
@@ -722,7 +732,7 @@ footer a {
     width: 20px;
     height: 20px;
     border: 3px solid rgba(100, 116, 139, 0.3);
-    border-top: 3px solid #f1c40f;
+    border-top: 3px solid #ffd700;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -826,7 +836,7 @@ footer a {
 }
 
 .stats-section h3 {
-    color: #f1c40f;
+    color: #ffd700;
     margin-bottom: 15px;
     font-size: 1.3rem;
     font-weight: 600;
@@ -852,7 +862,7 @@ footer a {
 }
 
 .stat-card.primary {
-    border: 2px solid #f1c40f;
+    border: 2px solid #ffd700;
     background: rgba(241, 196, 15, 0.1);
 }
 
