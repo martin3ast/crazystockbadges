@@ -69,14 +69,15 @@ class WebBadgeGenerator:
             db.update_session(self.session_id, status="generating_report", progress=20)
             
             # Generate session-specific report file
-            session_report_file = f"./cache/{self.session_id}_stock_report"
+            cache_dir = os.getenv('CACHE_DIR', '/tmp/cache' if os.getenv('VERCEL') else './cache')
+            session_report_file = f"{cache_dir}/{self.session_id}_stock_report"
             self.mdm.generate_report(output_file=session_report_file)
             
             # Analyze sentiment with session-specific files
             if os.path.exists(session_report_file):
                 report_analyzer = StockReportAnalyzer()
                 analysis = report_analyzer.analyze_report(report_path=session_report_file)
-                session_sentiment_file = f"./cache/{self.session_id}_sentiment_analysis.json"
+                session_sentiment_file = f"{cache_dir}/{self.session_id}_sentiment_analysis.json"
                 report_analyzer.save_analysis(analysis, session_sentiment_file)
                 
                 # Store analysis in database
@@ -138,9 +139,11 @@ class WebBadgeGenerator:
         if self.best_badge:
             # Use session-specific filename to avoid conflicts
             session_filename = f"{self.session_id}_{self.ticker}_badge"
-            output_file = f"./scad_models/{session_filename}.scad"
-            os.makedirs("./scad_models", exist_ok=True)
-            os.makedirs("./stl_models", exist_ok=True)
+            scad_dir = '/tmp/scad_models' if os.getenv('VERCEL') else './scad_models'
+            stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
+            output_file = f"{scad_dir}/{session_filename}.scad"
+            os.makedirs(scad_dir, exist_ok=True)
+            os.makedirs(stl_dir, exist_ok=True)
             
             # Save SCAD file
             self.best_badge.save_to_file(output_file)
@@ -387,7 +390,8 @@ def get_report(session_id):
     
     # Get stock report from session-specific file
     report_text = ""
-    session_report_file = f"./cache/{session_id}_stock_report"
+    cache_dir = os.getenv('CACHE_DIR', '/tmp/cache' if os.getenv('VERCEL') else './cache')
+    session_report_file = f"{cache_dir}/{session_id}_stock_report"
     if os.path.exists(session_report_file):
         with open(session_report_file, "r") as f:
             report_text = f.read()
@@ -424,16 +428,19 @@ def download_file(session_id, file_type):
     
     if file_type == 'scad':
         session_filename = f"{session_id}_{ticker}_badge.scad"
-        file_path = f"./scad_models/{session_filename}"
+        scad_dir = '/tmp/scad_models' if os.getenv('VERCEL') else './scad_models'
+        file_path = f"{scad_dir}/{session_filename}"
         if os.path.exists(file_path):
             return send_file(file_path, as_attachment=True, download_name=f"{ticker}_badge.scad")
     elif file_type == 'stl':
         session_filename = f"{session_id}_{ticker}_badge.stl"
-        file_path = f"./stl_models/{session_filename}"
+        stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
+        file_path = f"{stl_dir}/{session_filename}"
         if os.path.exists(file_path):
             return send_file(file_path, as_attachment=True, download_name=f"{ticker}_badge.stl")
     elif file_type == 'report':
-        session_report_file = f"./cache/{session_id}_stock_report"
+        cache_dir = os.getenv('CACHE_DIR', '/tmp/cache' if os.getenv('VERCEL') else './cache')
+        session_report_file = f"{cache_dir}/{session_id}_stock_report"
         if os.path.exists(session_report_file):
             return send_file(session_report_file, as_attachment=True, download_name=f"{ticker}_report.txt")
     
@@ -449,7 +456,8 @@ def get_stl_status(session_id):
     
     ticker = session['ticker']
     session_filename = f"{session_id}_{ticker}_badge.stl"
-    stl_path = f"./stl_models/{session_filename}"
+    stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
+    stl_path = f"{stl_dir}/{session_filename}"
     
     logger.info(f"Checking STL file: {stl_path}")
     logger.info(f"File exists: {os.path.exists(stl_path)}")
@@ -461,7 +469,7 @@ def get_stl_status(session_id):
     else:
         # List files in stl_models directory for debugging
         try:
-            files = os.listdir('./stl_models')
+            files = os.listdir(stl_dir)
             matching_files = [f for f in files if session_id in f]
             logger.info(f"Files in stl_models: {files[:10]}...")  # Show first 10 files
             logger.info(f"Files matching session_id {session_id}: {matching_files}")
@@ -480,7 +488,8 @@ def get_model(session_id):
     
     ticker = session['ticker']
     session_filename = f"{session_id}_{ticker}_badge.stl"
-    stl_path = f"./stl_models/{session_filename}"
+    stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
+    stl_path = f"{stl_dir}/{session_filename}"
     
     logger.info(f"Serving STL model: {stl_path}")
     
@@ -574,20 +583,28 @@ def cleanup_task():
         schedule.run_pending()
         time.sleep(60)  # Check every minute
 
-if __name__ == '__main__':
-    # Ensure required directories exist
-    cache_dir = os.getenv('CACHE_DIR', './cache')
-    os.makedirs('./scad_models', exist_ok=True)
-    os.makedirs('./stl_models', exist_ok=True)
+# Initialize directories for Vercel deployment
+def init_directories():
+    """Initialize required directories for the application"""
+    cache_dir = os.getenv('CACHE_DIR', '/tmp/cache')
+    os.makedirs('/tmp/scad_models', exist_ok=True)
+    os.makedirs('/tmp/stl_models', exist_ok=True)
     os.makedirs(cache_dir, exist_ok=True)
     os.makedirs('./static', exist_ok=True)
     os.makedirs('./templates', exist_ok=True)
-    os.makedirs('./data', exist_ok=True)  # For SQLite database
-    
-    # Start cleanup task in background thread
-    cleanup_thread = threading.Thread(target=cleanup_task, daemon=True)
-    cleanup_thread.start()
-    logger.info("Started background cleanup task")
+    # Use in-memory or external database for Vercel
+    if not os.getenv('VERCEL'):
+        os.makedirs('./data', exist_ok=True)
+
+# Initialize on module load for serverless
+init_directories()
+
+if __name__ == '__main__':
+    # Start cleanup task in background thread (only for local development)
+    if not os.getenv('VERCEL'):
+        cleanup_thread = threading.Thread(target=cleanup_task, daemon=True)
+        cleanup_thread.start()
+        logger.info("Started background cleanup task")
     
     # Get Flask configuration from environment variables
     flask_host = os.getenv('FLASK_HOST', '0.0.0.0')
