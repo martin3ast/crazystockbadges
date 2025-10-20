@@ -83,7 +83,3 @@ options:
 └── stl_models/                 # Generated STL models
 ```
 
-## Contact
-
-Martin East (mbe5)  
-Email: mbe5@kent.ac.uk
