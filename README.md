@@ -2,6 +2,10 @@
 
 A tool for generating 3D printable badges based on stock market data.
 
+It uses a Genetic Algorithm to find the most crazy (complex) design out of a set of primitive building blocks. 
+
+Each one is unique!
+
 ## Setup and Requirements
 
 ### External Applications
