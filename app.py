@@ -7,6 +7,7 @@ Provides a web interface for generating 3D printable badges from stock market da
 import os
 import json
 import logging
+import secrets
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import threading
@@ -26,7 +27,8 @@ from database import DatabaseManager
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5000').split(',')
+CORS(app, origins=allowed_origins)
 
 # Configure logging
 log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
@@ -322,6 +324,19 @@ def generate_badge():
     ticker = data.get('ticker', 'AAPL').upper()
     period = data.get('period', '1y')
     generations = data.get('generations', 10)
+
+    # Validate generations to prevent DoS
+    try:
+        generations = int(generations)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Generations must be a number'}), 400
+    if generations < 1 or generations > 100:
+        return jsonify({'error': 'Generations must be between 1 and 100'}), 400
+
+    # Validate period against allowed values
+    allowed_periods = ['1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', '10y', 'ytd', 'max']
+    if period not in allowed_periods:
+        return jsonify({'error': f'Period must be one of: {", ".join(allowed_periods)}'}), 400
     
     # Get client info for rate limiting
     client_ip = request.remote_addr
@@ -423,27 +438,34 @@ def download_file(session_id, file_type):
     session = db.get_session(session_id)
     if not session:
         return jsonify({'error': 'Session not found or expired'}), 404
-    
+
+    # Validate file_type
+    if file_type not in ('scad', 'stl', 'report'):
+        return jsonify({'error': 'Invalid file type'}), 400
+
     ticker = session['ticker']
-    
+
     if file_type == 'scad':
-        session_filename = f"{session_id}_{ticker}_badge.scad"
-        scad_dir = '/tmp/scad_models' if os.getenv('VERCEL') else './scad_models'
-        file_path = f"{scad_dir}/{session_filename}"
-        if os.path.exists(file_path):
-            return send_file(file_path, as_attachment=True, download_name=f"{ticker}_badge.scad")
+        base_dir = Path('/tmp/scad_models' if os.getenv('VERCEL') else './scad_models').resolve()
+        filename = f"{session_id}_{ticker}_badge.scad"
+        download_name = f"{ticker}_badge.scad"
     elif file_type == 'stl':
-        session_filename = f"{session_id}_{ticker}_badge.stl"
-        stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
-        file_path = f"{stl_dir}/{session_filename}"
-        if os.path.exists(file_path):
-            return send_file(file_path, as_attachment=True, download_name=f"{ticker}_badge.stl")
-    elif file_type == 'report':
-        cache_dir = os.getenv('CACHE_DIR', '/tmp/cache' if os.getenv('VERCEL') else './cache')
-        session_report_file = f"{cache_dir}/{session_id}_stock_report"
-        if os.path.exists(session_report_file):
-            return send_file(session_report_file, as_attachment=True, download_name=f"{ticker}_report.txt")
-    
+        base_dir = Path('/tmp/stl_models' if os.getenv('VERCEL') else './stl_models').resolve()
+        filename = f"{session_id}_{ticker}_badge.stl"
+        download_name = f"{ticker}_badge.stl"
+    else:  # report
+        base_dir = Path(os.getenv('CACHE_DIR', '/tmp/cache' if os.getenv('VERCEL') else './cache')).resolve()
+        filename = f"{session_id}_stock_report"
+        download_name = f"{ticker}_report.txt"
+
+    # Resolve path and verify it stays within the base directory
+    file_path = (base_dir / Path(filename).name).resolve()
+    if not str(file_path).startswith(str(base_dir)):
+        return jsonify({'error': 'Invalid file path'}), 403
+
+    if file_path.exists():
+        return send_file(file_path, as_attachment=True, download_name=download_name)
+
     return jsonify({'error': 'File not found'}), 404
 
 @app.route('/api/stl-status/<session_id>')
@@ -465,7 +487,7 @@ def get_stl_status(session_id):
     if os.path.exists(stl_path):
         file_size = os.path.getsize(stl_path)
         logger.info(f"STL file size: {file_size} bytes")
-        return jsonify({'ready': True, 'path': stl_path, 'size': file_size})
+        return jsonify({'ready': True, 'size': file_size})
     else:
         # List files in stl_models directory for debugging
         try:
@@ -504,9 +526,12 @@ def get_model(session_id):
 @app.route('/api/admin/cleanup', methods=['POST'])
 def cleanup_expired():
     """Manual cleanup of expired sessions (admin only)"""
-    # Basic auth check (in production, use proper authentication)
-    auth_token = request.headers.get('Authorization')
-    if auth_token != f"Bearer {os.getenv('ADMIN_TOKEN', 'admin123')}":
+    admin_token = os.getenv('ADMIN_TOKEN')
+    if not admin_token:
+        return jsonify({'error': 'Admin access not configured'}), 503
+
+    auth_token = request.headers.get('Authorization', '')
+    if not secrets.compare_digest(auth_token, f"Bearer {admin_token}"):
         return jsonify({'error': 'Unauthorized'}), 401
     
     try:
@@ -609,6 +634,6 @@ if __name__ == '__main__':
     # Get Flask configuration from environment variables
     flask_host = os.getenv('FLASK_HOST', '0.0.0.0')
     flask_port = int(os.getenv('FLASK_PORT', '5000'))
-    flask_debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
+    flask_debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     
     app.run(debug=flask_debug, host=flask_host, port=flask_port)

@@ -3,7 +3,32 @@
     "allow": [
       "Bash(pip install:*)",
       "Bash(scutil:*)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(ls:*)",
+      "Bash(grep -r \"def \" /home/martin/workspace/crazystockbadges/*.py)",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('app.py', doraise=True\\); print\\('app.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('database.py', doraise=True\\); print\\('database.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('badge_factory.py', doraise=True\\); print\\('badge_factory.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('marketdata.py', doraise=True\\); print\\('marketdata.py OK'\\)\")",
+      "Bash(python3 -c \"import py_compile; py_compile.compile\\('app.py', doraise=True\\); print\\('app.py OK'\\)\")",
+      "Bash(python3 -c \"import py_compile; py_compile.compile\\('database.py', doraise=True\\); print\\('database.py OK'\\)\")",
+      "Bash(python3 -c \"import py_compile; py_compile.compile\\('badge_factory.py', doraise=True\\); print\\('badge_factory.py OK'\\)\")",
+      "Bash(python3 -c \"import py_compile; py_compile.compile\\('marketdata.py', doraise=True\\); print\\('marketdata.py OK'\\)\")",
+      "Bash(dpkg -l)",
+      "Bash(conda env:*)",
+      "Bash(pip3 --version)",
+      "Bash(apt list:*)",
+      "Bash(snap list:*)",
+      "Bash(flatpak list:*)",
+      "Bash(python3 -m pip --version)",
+      "Bash(python3 -c \"import venv\")",
+      "Bash(uv --version)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)",
+      "Bash(uv add:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }

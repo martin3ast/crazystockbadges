@@ -122,17 +122,28 @@ class DatabaseManager:
                 return dict(row)
             return None
     
+    # Columns that may be updated via update_session
+    ALLOWED_UPDATE_FIELDS = {
+        'status', 'progress', 'current_generation', 'error_message',
+        'best_fitness', 'updated_at'
+    }
+
     def update_session(self, session_id, **kwargs):
         """Update session fields"""
         if not kwargs:
             return
-        
+
         # Always update the updated_at timestamp
         kwargs['updated_at'] = datetime.now()
-        
+
+        # Validate column names against whitelist
+        invalid_keys = set(kwargs.keys()) - self.ALLOWED_UPDATE_FIELDS
+        if invalid_keys:
+            raise ValueError(f"Invalid update fields: {invalid_keys}")
+
         fields = ', '.join(f"{key} = ?" for key in kwargs.keys())
         values = list(kwargs.values()) + [session_id]
-        
+
         with self.get_connection() as conn:
             conn.execute(f'''
                 UPDATE sessions SET {fields} WHERE id = ?

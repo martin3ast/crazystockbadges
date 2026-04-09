@@ -834,11 +834,12 @@ class Badge3DModel(ABC):
         scad_models_dir = Path("./scad_models")
         scad_models_dir.mkdir(exist_ok=True)
         
-        # Create full path to file in scad_models directory
-        if not str(filename).startswith("./scad_models/"):
-            filepath = scad_models_dir / Path(filename).name
-        else:
-            filepath = filename
+        # Create full path to file in scad_models directory, stripping any directory components
+        filepath = (scad_models_dir / Path(filename).name).resolve()
+
+        # Ensure the resolved path stays within scad_models
+        if not str(filepath).startswith(str(scad_models_dir.resolve())):
+            raise ValueError(f"Invalid filename: path escapes scad_models directory")
         
         # Save the model
         scad_render_to_file(self.final_model, filepath)

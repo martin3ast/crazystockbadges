@@ -26,6 +26,7 @@ Version 1.1 - Martin East - Revew and tidy code, reduce complexity, remove graph
 """
 
 import os
+import re
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
@@ -103,9 +104,13 @@ class MarketDataManager:
         # Clean ticker: remove whitespace and convert to uppercase
         ticker = ticker.strip().upper()
         
-        # Basic length check only
+        # Length and character validation
         if len(ticker) == 0 or len(ticker) > 15:
             return {'valid': False, 'name': None, 'error': 'Ticker must be 1-15 characters long'}
+
+        # Only allow alphanumeric, dots, and hyphens (covers tickers like BRK.B, BF-B)
+        if not re.match(r'^[A-Z0-9.\-]+$', ticker):
+            return {'valid': False, 'name': None, 'error': 'Ticker contains invalid characters'}
         
         try:
             # Try to get ticker info from yfinance
@@ -363,8 +368,8 @@ class MarketDataManager:
         return {
             # Basic info
             'ticker': self.ticker,
-            'data_start': self.data.index[0].strftime('%Y-%m-%d'),
-            'data_end': self.data.index[-1].strftime('%Y-%m-%d'),
+            'data_start': str(self.data.index[0])[:10],
+            'data_end': str(self.data.index[-1])[:10],
             
             # Price action
             'latest_price': latest_close,

@@ -178,3 +178,4 @@ stl_models/
 scad_models/
 plots/
 cache/
+data/*.db
