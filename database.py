@@ -295,10 +295,11 @@ class DatabaseManager:
         
         with self.get_connection() as conn:
             rows = conn.execute('''
-                SELECT * FROM sessions 
-                WHERE client_ip = ? 
-                AND created_at > ? 
+                SELECT * FROM sessions
+                WHERE client_ip = ?
+                AND created_at > ?
                 AND expires_at > CURRENT_TIMESTAMP
+                AND status NOT IN ('completed', 'error')
                 ORDER BY created_at DESC
             ''', (client_ip, since)).fetchall()
             
