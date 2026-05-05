@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.git/
+cache/
+scad_models/
+stl_models/
+data/
+prototype/
+docs/
+examples/
+*.code-workspace

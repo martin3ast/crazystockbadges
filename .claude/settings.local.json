@@ -28,7 +28,11 @@
       "Bash(uv sync:*)",
       "Bash(uv run:*)",
       "Bash(uv add:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(pkill -f \"python app.py\")",
+      "Bash(docker run:*)",
+      "Bash(lsof -ti:5000)",
+      "Bash(xargs kill:*)"
     ],
     "deny": []
   }

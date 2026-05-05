@@ -30,14 +30,14 @@ DEFAULT_REPORT_PATH = './stock_report'
 # Ensure NLTK data is available
 from nltk.data import find
 
-# Check for punkt
+# Check for punkt_tab (required by newer NLTK versions)
 try:
-    find('tokenizers/punkt')
-    logger.info("NLTK punkt tokenizer found locally")
+    find('tokenizers/punkt_tab')
+    logger.info("NLTK punkt_tab tokenizer found locally")
 except LookupError:
-    logger.info("NLTK punkt tokenizer not found locally, downloading...")
-    download('punkt', quiet=True)
-    logger.info("NLTK punkt tokenizer downloaded successfully")
+    logger.info("NLTK punkt_tab tokenizer not found locally, downloading...")
+    download('punkt_tab', quiet=True)
+    logger.info("NLTK punkt_tab tokenizer downloaded successfully")
 
 # Check for stopwords
 try:

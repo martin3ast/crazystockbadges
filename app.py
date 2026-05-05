@@ -633,7 +633,7 @@ if __name__ == '__main__':
     
     # Get Flask configuration from environment variables
     flask_host = os.getenv('FLASK_HOST', '0.0.0.0')
-    flask_port = int(os.getenv('FLASK_PORT', '5000'))
+    flask_port = int(os.getenv('PORT', os.getenv('FLASK_PORT', '5000')))
     flask_debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
     
     app.run(debug=flask_debug, host=flask_host, port=flask_port)
