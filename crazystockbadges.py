@@ -220,12 +220,10 @@ class CrazyStockBadge:
         # Generate the badge using the genetic algorithm
         self.generate_badge()
 
-        output_file = self.args.output 
-        print(f"{Fore.BLUE}... Writing SCAD object to {output_file}...{Style.RESET_ALL}")
-
         # Closing information
         #
         output_file = self.args.output if self.args.output else f"./scad_models/{self.ticker}_badge.scad"
+        print(f"{Fore.BLUE}... Writing SCAD object to {output_file}...{Style.RESET_ALL}")
         
         print(f"\n{Fore.GREEN}✅ Badge generation complete!{Style.RESET_ALL}")
         print(f"{Fore.CYAN}📁 Files created:{Style.RESET_ALL}")
