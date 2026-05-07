@@ -182,7 +182,7 @@ class CrazyStockBadge:
         stats = self.mdm.get_summary_stats()
         
         print(f"{Fore.BLUE}...   High/Low = {stats['high']} / {stats['low']} {Style.RESET_ALL}")
-        print(f"{Fore.BLUE}...   Latest MACD = {stats['latest_macd']} {Style.RESET_ALL}")
+        print(f"{Fore.BLUE}...   Latest MACD = {stats['macd']} {Style.RESET_ALL}")
         
         if not self.args.skip_report:
             print(f"{Fore.BLUE}... Generating a market report, talking with GPT3.5 via OpenRouter.ai to do this ... {Style.RESET_ALL}")
