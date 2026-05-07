@@ -73,7 +73,6 @@ options:
 ├── badge_factory.py            # Badge creation factory
 ├── complexity_analyser.py      # Analyzes model complexity
 ├── crazystockbadges.py         # Main application
-├── environment.yml             # Conda environment definition
 ├── marketdata.py               # Stock market data handling
 ├── sentiment_analyser.py       # Sentiment analysis for reports
 ├── cache/                      # Cached data
