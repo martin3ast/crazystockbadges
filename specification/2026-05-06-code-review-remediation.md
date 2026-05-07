@@ -15,6 +15,57 @@
 
 ---
 
+## Task 0: Fix `latest_macd` key mismatch (pre-existing baseline failure)
+
+**Files:**
+- Modify: `crazystockbadges.py:185`
+- Modify: `test_marketdata.py:180`
+
+Discovered while running the baseline test suite. `MarketDataManager.get_summary_stats()` returns the dict key `macd`, but `crazystockbadges.py:185` and `test_marketdata.py:180` both read `stats['latest_macd']`. Introduced in commit `2d5ce76` ("Cleanup and updates"); the test has been failing and the CLI would `KeyError` after technical analysis. Fix the consumers, not the producer — the surrounding dict already uses unprefixed keys (`rsi`, `sma_20`).
+
+The prototype files under `prototype/cline_iteration1/` also reference the old key but are out of scope (preserved as historical artifacts).
+
+- [ ] **Step 1: Confirm the bug is reproducible**
+
+Run: `uv run python -m unittest test_marketdata.TestMarketDataManager.test_get_summary_stats -v`
+Expected: FAIL with `'latest_macd' not found in {...}`.
+
+- [ ] **Step 2: Fix the CLI consumer**
+
+In `crazystockbadges.py:185`, change:
+```python
+print(f"{Fore.BLUE}...   Latest MACD = {stats['latest_macd']} {Style.RESET_ALL}")
+```
+to:
+```python
+print(f"{Fore.BLUE}...   Latest MACD = {stats['macd']} {Style.RESET_ALL}")
+```
+
+- [ ] **Step 3: Fix the test expectation**
+
+In `test_marketdata.py:180`, change:
+```python
+self.assertIn('latest_macd', stats)
+```
+to:
+```python
+self.assertIn('macd', stats)
+```
+
+- [ ] **Step 4: Run the full marketdata suite**
+
+Run: `uv run python -m unittest test_marketdata -v`
+Expected: 26 tests pass, 0 failures.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add crazystockbadges.py test_marketdata.py
+git commit -m "fix: correct macd key reference in CLI and test"
+```
+
+---
+
 ## Task 1: Fix README inaccuracies
 
 **Files:**
