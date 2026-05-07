@@ -26,9 +26,6 @@ from colorama import init, Fore, Style
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Import Python debugger
-import pdb
-
 # Import required modules
 import marketdata as md
 from badge_factory import BadgeFactory
