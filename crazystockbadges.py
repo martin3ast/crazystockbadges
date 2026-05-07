@@ -303,20 +303,9 @@ class CrazyStockBadge:
         plots_dir = "./plots"
         os.makedirs(plots_dir, exist_ok=True)
         
-        # Plot fitness evolution directly from the GA instance
-        # fitness_fig = self.ga_instance.plot_fitness(
-        #     title=f"{self.ticker} Badge - Fitness Evolution",
-        #     save_dir=plots_dir
-        # )
-        
-        # # Plot new solution rate directly from the GA instance
-        # solution_rate_fig = self.ga_instance.plot_new_solution_rate(
-        #     title=f"{self.ticker} Badge - New Solution Rate",
-        #     save_dir=plots_dir
-        # )
-        
-        # Plot fitness statistics (min, mean, max)
-        # if self.fitness_stats['generation']:
+        # plot_fitness_statistics writes the only plot we actually use today;
+        # PyGAD's built-in plot_fitness/plot_new_solution_rate hooks were
+        # removed because they duplicate that information.
         self.plot_fitness_statistics(plots_dir)
         
         self.logger.info(f"GA plots saved to {plots_dir}")
