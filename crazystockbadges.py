@@ -20,7 +20,6 @@ import re
 import logging
 import random
 import statistics
-import warnings
 from collections import defaultdict
 from colorama import init, Fore, Style
 import matplotlib.pyplot as plt
@@ -28,13 +27,8 @@ import numpy as np
 
 # Import required modules
 import marketdata as md
-from badge_factory import BadgeFactory
-from complexity_analyser import ComplexityAnalyzer
 from sentiment_analyser import StockReportAnalyzer
-from solid import scad_render
-import pygad
-from pygad.visualize import plot
-from ga_engine import BadgeGAEngine, GENE_SPACE
+from ga_engine import BadgeGAEngine
 
 
 # Initialize colorama for Text color on terminal output.
