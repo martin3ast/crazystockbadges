@@ -163,23 +163,33 @@ class ComplexityAnalyzer:
                 self.metrics['polygonal_metrics']['total_faces'] += faces_count
     
     def _calculate_simple_complexity_score(self):
+        """Compute a weighted complexity score from the collected counts.
+
+        Note for callers: the genetic-algorithm fitness adds this score to
+        `total_nodes`. Because every operation node is also counted in
+        `total_nodes` (see `_traverse_and_count_nodes`), each operation
+        contributes at least 1 (via total_nodes) plus 1.5 (via operation_sum)
+        to the GA fitness — a net 2.5x weighting versus a primitive node.
+        This bias is intentional today (operation-rich trees feel "crazier"),
+        but reweighting is on the CC follow-up list; do not change it without
+        re-tuning the GA hyperparameters.
         """
-        Calculate a simple complexity score based on counts
-        """
-        # Sum of all primitive and operation counts
         primitive_sum = sum(self.metrics['primitive_counts'].values())
         operation_sum = sum(self.metrics['operation_counts'].values())
-        
-        # Add polygonal metrics
+
         polygonal_sum = (
-            self.metrics['polygonal_metrics']['polygon_count'] + 
-            self.metrics['polygonal_metrics']['polyhedron_count'] * 2 +  # Weight polyhedrons slightly more
-            self.metrics['polygonal_metrics']['total_points'] * 0.1 +
-            self.metrics['polygonal_metrics']['total_faces'] * 0.2
+            self.metrics['polygonal_metrics']['polygon_count']
+            + self.metrics['polygonal_metrics']['polyhedron_count'] * 2
+            + self.metrics['polygonal_metrics']['total_points'] * 0.1
+            + self.metrics['polygonal_metrics']['total_faces'] * 0.2
         )
-        
-        # Simple weighted sum
-        return primitive_sum + operation_sum * 1.5 + polygonal_sum + self.metrics['max_depth'] * 0.5
+
+        return (
+            primitive_sum
+            + operation_sum * 1.5
+            + polygonal_sum
+            + self.metrics['max_depth'] * 0.5
+        )
     
     def get_complexity_report(self):
         """
