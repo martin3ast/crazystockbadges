@@ -81,48 +81,24 @@ class ComplexityAnalyzer:
         """
         if node is None:
             return
-            
+
         self.metrics['total_nodes'] += 1
         self.metrics['max_depth'] = max(self.metrics['max_depth'], depth)
-        
-        # Handle different node types
+
         if isinstance(node, (list, tuple)):
-            # Handle list or tuple of nodes
             for child in node:
-                self._traverse_and_count_nodes(child, depth+1)
+                self._traverse_and_count_nodes(child, depth + 1)
         elif hasattr(node, 'children') and node.children:
-            # Operation node with children
             op_name = node.__class__.__name__.lower()
             self.metrics['operation_counts'][op_name] += 1
-            
-            # Process all children
             for child in node.children:
-                self._traverse_and_count_nodes(child, depth+1)
-        elif hasattr(node, 'child') and node.child is not None:
-            # Handle nodes with a single child (like translate, rotate, etc.)
-            op_name = node.__class__.__name__.lower()
-            self.metrics['operation_counts'][op_name] += 1
-            
-            # Process the child
-            self._traverse_and_count_nodes(node.child, depth+1)
-        elif hasattr(node, 'objects') and node.objects:
-            # Handle nodes with objects attribute (like union, difference, etc.)
-            op_name = node.__class__.__name__.lower()
-            self.metrics['operation_counts'][op_name] += 1
-            
-            # Process all objects
-            for obj in node.objects:
-                self._traverse_and_count_nodes(obj, depth+1)
+                self._traverse_and_count_nodes(child, depth + 1)
         else:
-            # Primitive node or leaf node
             prim_name = node.__class__.__name__.lower()
             self.metrics['primitive_counts'][prim_name] += 1
-            
-            # Count polygonal elements
+
             if isinstance(node, polygon):
                 self.metrics['polygonal_metrics']['polygon_count'] += 1
-                
-                # Count points
                 points_count = 0
                 if hasattr(node, 'points') and node.points:
                     points_count = len(node.points)
@@ -130,35 +106,28 @@ class ComplexityAnalyzer:
                     points_count = len(node.params['points'])
                 elif hasattr(node, '_points'):
                     points_count = len(node._points)
-                
                 if points_count > 0:
                     self.metrics['polygonal_metrics']['total_points'] += points_count
                     self.metrics['polygonal_metrics']['max_points_per_polygon'] = max(
-                        self.metrics['polygonal_metrics']['max_points_per_polygon'], 
-                        points_count
+                        self.metrics['polygonal_metrics']['max_points_per_polygon'],
+                        points_count,
                     )
-                
             elif isinstance(node, polyhedron):
                 self.metrics['polygonal_metrics']['polyhedron_count'] += 1
-                
-                # Count points and faces
                 points_count = 0
                 faces_count = 0
-                
                 if hasattr(node, 'points') and node.points:
                     points_count = len(node.points)
                 elif hasattr(node, 'params') and 'points' in node.params:
                     points_count = len(node.params['points'])
                 elif hasattr(node, '_points'):
                     points_count = len(node._points)
-                
                 if hasattr(node, 'faces') and node.faces:
                     faces_count = len(node.faces)
                 elif hasattr(node, 'params') and 'faces' in node.params:
                     faces_count = len(node.params['faces'])
                 elif hasattr(node, '_faces'):
                     faces_count = len(node._faces)
-                
                 self.metrics['polygonal_metrics']['total_points'] += points_count
                 self.metrics['polygonal_metrics']['total_faces'] += faces_count
     
