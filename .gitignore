@@ -179,3 +179,6 @@ scad_models/
 plots/
 cache/
 data/*.db
+
+# Worktrees
+.worktrees/
