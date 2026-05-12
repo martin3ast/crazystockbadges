@@ -32,7 +32,19 @@
       "Bash(pkill -f \"python app.py\")",
       "Bash(docker run:*)",
       "Bash(lsof -ti:5000)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(grep -E \"^\\\\.env|^\\\\.env\\\\..*|^\\\\.env$\" .gitignore)",
+      "Bash(grep -E \"^\\\\.env$\")",
+      "Bash(git check-ignore *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'chore: ignore .worktrees/ directory *)",
+      "Bash(git merge *)",
+      "Bash(git commit -m 'docs: add Task 0 for pre-existing latest_macd key mismatch *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(gcloud artifacts repositories list *)",
+      "Bash(git push *)",
+      "Bash(git fetch *)"
     ],
     "deny": []
   }
