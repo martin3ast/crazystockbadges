@@ -14,11 +14,8 @@ import threading
 import time
 from datetime import datetime
 import marketdata as md
-from badge_factory import BadgeFactory
-from complexity_analyser import ComplexityAnalyzer
 from sentiment_analyser import StockReportAnalyzer
-import pygad
-import warnings
+from ga_engine import BadgeGAEngine
 from pathlib import Path
 from dotenv import load_dotenv
 from database import DatabaseManager
@@ -110,188 +107,66 @@ class WebBadgeGenerator:
                 del active_generators[self.session_id]
             
     def _run_genetic_algorithm(self):
-        """Run the genetic algorithm with progress tracking"""
-        gene_space = self._create_gene_space()
-        
-        warnings.filterwarnings("ignore", message="Use the 'save_solutions' parameter with caution")
-        
-        self.ga_instance = pygad.GA(
+        """Run the genetic algorithm with progress tracking."""
+        def on_generation(ga_instance, engine):
+            current_generation = ga_instance.generations_completed
+            progress_pct = 30 + (current_generation / self.ga_generations) * 70
+            progress = min(99, int(progress_pct))
+
+            db.update_session(
+                self.session_id,
+                current_generation=current_generation,
+                progress=progress,
+                best_fitness=engine.best_fitness,
+            )
+
+            if hasattr(ga_instance, 'badges'):
+                fitness_values = [
+                    ga_instance.badges[i][2]
+                    for i in range(len(ga_instance.population))
+                    if i in ga_instance.badges
+                ]
+                if fitness_values:
+                    db.add_fitness_stat(
+                        self.session_id,
+                        current_generation,
+                        min(fitness_values),
+                        sum(fitness_values) / len(fitness_values),
+                        max(fitness_values),
+                        engine.best_fitness,
+                    )
+
+        engine = BadgeGAEngine(
+            mdm=self.mdm,
+            ticker=self.ticker,
             num_generations=self.ga_generations,
-            num_parents_mating=2,
-            fitness_func=self._fitness_function,
-            sol_per_pop=20,
-            num_genes=len(gene_space),
-            gene_space=gene_space,
-            parent_selection_type="tournament",
-            K_tournament=2,
-            crossover_type="two_points",
-            crossover_probability=0.8,
-            mutation_type="adaptive",
-            mutation_num_genes=[3,1],
-            keep_elitism=1,
-            mutation_probability=[0.3,0.1],
-            on_generation=self._on_generation,
-            allow_duplicate_genes=True,
-            save_solutions=True
+            on_generation=on_generation,
         )
-        
-        self.ga_instance.run()
-        
-        # Save the best badge
+        self.best_badge, self.best_fitness = engine.run()
+        self.ga_instance = engine.ga_instance
+
         if self.best_badge:
-            # Use session-specific filename to avoid conflicts
             session_filename = f"{self.session_id}_{self.ticker}_badge"
             scad_dir = '/tmp/scad_models' if os.getenv('VERCEL') else './scad_models'
             stl_dir = '/tmp/stl_models' if os.getenv('VERCEL') else './stl_models'
             output_file = f"{scad_dir}/{session_filename}.scad"
             os.makedirs(scad_dir, exist_ok=True)
             os.makedirs(stl_dir, exist_ok=True)
-            
-            # Save SCAD file
+
             self.best_badge.save_to_file(output_file)
-            
-            # Save STL file for 3D visualization (async to avoid blocking)
+
             try:
-                logger.info(f"Starting STL generation for session {self.session_id}, filename: {session_filename}")
+                logger.info(
+                    f"Starting STL generation for session {self.session_id}, "
+                    f"filename: {session_filename}"
+                )
                 self.best_badge.save_to_stl_async(session_filename)
                 logger.info("STL generation started in background")
             except Exception as e:
-                logger.warning(f"STL generation failed to start: {e} - 3D preview may not be available")
-            
-    def _fitness_function(self, ga_instance, solution, solution_idx):
-        """Fitness function for genetic algorithm"""
-        params = self._genes_to_badge_params(solution)
-        
-        badge = BadgeFactory.create_badge(params['badge_type'], self.mdm.data, self.ticker, params)
-        badge.generate_base()
-        badge.generate_terrain()
-        badge.generate_text()
-        badge.combine_models()
-        
-        analyzer = ComplexityAnalyzer(badge.final_model)
-        report = analyzer.get_complexity_report()
-        
-        if not hasattr(ga_instance, 'badges'):
-            ga_instance.badges = {}
-        
-        fitness = report['total_nodes'] + report['complexity_score']
-        ga_instance.badges[solution_idx] = (badge, report, fitness)
-        
-        if fitness > self.best_fitness:
-            self.best_fitness = fitness
-            self.best_badge = badge
-            
-        return fitness
-        
-    def _on_generation(self, ga_instance):
-        """Callback for generation completion"""
-        current_generation = ga_instance.generations_completed
-        progress_pct = 30 + (current_generation / self.ga_generations) * 70
-        progress = min(99, int(progress_pct))
-        
-        # Update session progress in database
-        db.update_session(self.session_id, 
-                         current_generation=current_generation, 
-                         progress=progress,
-                         best_fitness=self.best_fitness)
-        
-        # Calculate and store fitness statistics
-        if hasattr(ga_instance, 'badges'):
-            fitness_values = [ga_instance.badges[i][2] for i in range(len(ga_instance.population)) if i in ga_instance.badges]
-            if fitness_values:
-                min_fitness = min(fitness_values)
-                mean_fitness = sum(fitness_values) / len(fitness_values)
-                max_fitness = max(fitness_values)
-                
-                # Store fitness stats in database
-                db.add_fitness_stat(self.session_id, current_generation, 
-                                  min_fitness, mean_fitness, max_fitness, self.best_fitness)
-        
-    def _genes_to_badge_params(self, genes):
-        """Convert genes to badge parameters"""
-        badge_types = ['disc', 'rectangular', 'triangular']
-        all_terrain_types = ['spiral_chart', 'bar_chart', 'pyramid', 'surface_plot']
-        text_content_types = ['one_word_analysis', 'buy_sell_hold', 'latest_macd', 'high', 'low', 'market_outlook']
-        
-        badge_type_idx = int(genes[0])
-        badge_type = badge_types[badge_type_idx]
-        
-        num_terrain_types = int(genes[1])
-        terrain_types = []
-        for i in range(num_terrain_types):
-            terrain_idx = int(genes[2 + i])
-            terrain_types.append(all_terrain_types[terrain_idx])
-        
-        text_position = genes[6]
-        text_type_idx = int(genes[7])
-        text_type = text_content_types[text_type_idx]
-        
-        sentiment = self.mdm.get_sentiment()
-        text_content = self.ticker + " " + self._get_text_content(text_type, sentiment)
-        
-        base_height = int(genes[8])
-        size_idx = int(genes[9])
-        spiral_turns = int(genes[10])
-        
-        params = {
-            'badge_type': badge_type,
-            'text_position': text_position,
-            'text_content': text_content,
-            'base_height': base_height,
-            'height_range': (0, 10),
-            'width_range': (0, 10),
-            'text_size': 10,
-            'text_depth': 2,
-            'spiral_turns': spiral_turns,
-            'terrain_types': terrain_types
-        }
-        
-        if badge_type == 'disc':
-            base_radius_map = [30, 50, 70]
-            params['base_radius'] = base_radius_map[size_idx]
-        elif badge_type == 'rectangular':
-            base_width_map = [60, 90, 120]
-            base_depth_map = [40, 60, 80]
-            params['base_width'] = base_width_map[size_idx]
-            params['base_depth'] = base_depth_map[size_idx]
-        elif badge_type == 'triangular':
-            side_length_map = [60, 80, 100]
-            params['side_length'] = side_length_map[size_idx]
-            
-        return params
-        
-    def _get_text_content(self, text_type, sentiment):
-        """Get text content based on type and sentiment"""
-        if text_type == 'one_word_analysis':
-            return self.mdm.get_one_word_analysis(sentiment)
-        elif text_type == 'buy_sell_hold':
-            return self.mdm.get_buy_sell_hold(sentiment)
-        elif text_type == 'latest_macd':
-            return self.mdm.get_latest_macd()
-        elif text_type == 'high':
-            return self.mdm.get_high()
-        elif text_type == 'low':
-            return self.mdm.get_low()
-        elif text_type == 'market_outlook':
-            return self.mdm.get_market_outlook(sentiment)
-        else:
-            return "Unknown"
-            
-    def _create_gene_space(self):
-        """Create gene space for genetic algorithm"""
-        return [
-            [0, 1, 2],  # Badge type
-            [1, 2, 3, 4],  # Number of terrain types
-            [0, 1, 2, 3],  # Terrain type 1
-            [0, 1, 2, 3],  # Terrain type 2
-            [0, 1, 2, 3],  # Terrain type 3
-            [0, 1, 2, 3],  # Terrain type 4
-            {'low': 0, 'high': 360},  # Text position
-            [0, 1, 2, 3, 4, 5],  # Text type
-            [1, 2, 3],  # Base height
-            [0, 1, 2],  # Size
-            {'low': 3, 'high': 10}  # Spiral turns
-        ]
+                logger.warning(
+                    f"STL generation failed to start: {e} — "
+                    "3D preview may not be available"
+                )
 
 @app.route('/')
 def landing():

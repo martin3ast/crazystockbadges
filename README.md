@@ -16,26 +16,24 @@ Each one is unique!
 - **Prusa Slicer**: Recommended for preparing 3D models for printing
   - Download: [https://www.prusa3d.com/prusaslicer/](https://www.prusa3d.com/prusaslicer/)
 
-### Conda Environment Setup
+### Python Environment Setup
 
-The project uses a conda environment to manage dependencies. Set it up with:
+The project uses [uv](https://docs.astral.sh/uv/) to manage dependencies (see `pyproject.toml`). To set up:
 
 ```bash
-# Create and activate the environment from environment.yml
-conda env create -f environment.yml
-conda activate crazystockbadges
+uv sync
 ```
+
+To run any script, prefix it with `uv run`, e.g. `uv run python crazystockbadges.py`.
 
 ### API Key Configuration
 
-The application uses a personal OpenRouter API for generating stock reports, which will expire in 3 months.
+The application uses an OpenRouter API key for generating stock reports.
 
-```python
-# In marketdata.py
-DEFAULT_API_KEY = 'your-api-key-here'
-```
+1. Copy `.env.example` to `.env`.
+2. Set `OPENROUTER_API_KEY=<your-key>` in `.env`.
 
-This can also be set with `OPENROUTER_API_KEY` environment variable.
+The key is loaded via `python-dotenv`; do not hard-code it in source files.
 
 ## Running the Application
 
@@ -64,7 +62,7 @@ options:
   --ga-generations GA_GENERATIONS
                         Number of generations for the genetic algorithm (default: 10)
   --log-level {DEBUG,INFO,WARN,ERROR}
-                        Set logging level (default: INFO)
+                        Set logging level (default: WARN)
   --visualise-ga        Visualise genetic algorithm results
 ```
 
@@ -73,10 +71,8 @@ options:
 ```
 .
 ├── badge_factory.py            # Badge creation factory
-├── badge_factory_refactored.py # Refactored badge factory
 ├── complexity_analyser.py      # Analyzes model complexity
 ├── crazystockbadges.py         # Main application
-├── environment.yml             # Conda environment definition
 ├── marketdata.py               # Stock market data handling
 ├── sentiment_analyser.py       # Sentiment analysis for reports
 ├── cache/                      # Cached data

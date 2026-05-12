@@ -177,8 +177,8 @@ class TestMarketDataManager(unittest.TestCase):
         self.assertIn('low', stats)
         self.assertIn('price_change_pct', stats)
         self.assertIn('volatility_pct', stats)
-        self.assertIn('latest_macd', stats)
-        self.assertIn('latest_rsi', stats)
+        self.assertIn('macd', stats)
+        self.assertIn('rsi', stats)
         self.assertIn('data_start', stats)
         self.assertIn('data_end', stats)
     

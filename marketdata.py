@@ -61,14 +61,6 @@ class MarketDataManager:
     Manages fetching, analyzing, and reporting on stock market data.
     
     Version 1.0 - Cline implementation for Martin East - Implements data fetching, technical analysis, and report generation - Apr 13, 2025.
-    Version 1.1 - Martin East - Review and tidy code, reduce complexity, remove graphing - Apr 14, 2025.
-    """
-    
-class MarketDataManager:
-    """
-    Manages fetching, analyzing, and reporting on stock market data.
-    
-    Version 1.0 - Cline implementation for Martin East - Implements data fetching, technical analysis, and report generation - Apr 13, 2025.
     """
     
     def __init__(self, ticker='AAPL', period='1y', api_key=None):
