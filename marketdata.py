@@ -78,6 +78,8 @@ class MarketDataManager:
         self.ticker = ticker
         self.period = period
         self.report = None
+        # Path the sentiment analyser wrote to; callers may override for per-session files.
+        self.sentiment_file = Path("./cache/sentiment_analysis.json")
     
     @staticmethod
     def validate_ticker(ticker):

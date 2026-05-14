@@ -66,6 +66,45 @@ options:
   --visualise-ga        Visualise genetic algorithm results
 ```
 
+## Running Locally with Docker Compose
+
+The fastest way to run the web app on your machine is via Docker. The provided `docker-compose.yml` reuses the same `Dockerfile` that `deploy.sh` ships to Cloud Run, so a local run mirrors production behaviour.
+
+**Prerequisites:**
+
+- [Docker](https://docs.docker.com/get-docker/) (Engine 20.10+ with the Compose plugin, or Docker Desktop)
+- An OpenRouter API key (see [API Key Configuration](#api-key-configuration) above)
+
+**Steps:**
+
+1. Copy the example env file and add your API key:
+   ```bash
+   cp .env.example .env
+   # then edit .env and set OPENROUTER_API_KEY=<your-key>
+   ```
+
+2. Start the app. Pick one of the two profiles:
+   ```bash
+   # Prod-parity: identical image to what deploy.sh ships. Artifacts persist in named volumes.
+   docker compose --profile prod up --build
+
+   # Development: source tree is bind-mounted into the container, FLASK_DEBUG=True hot-reloads
+   # changes to .py/templates/static without rebuilding.
+   docker compose --profile dev up --build
+   ```
+
+3. Open the app at [http://localhost:5000](http://localhost:5000).
+
+4. Stop the stack with `Ctrl+C`, then tear it down:
+   ```bash
+   docker compose down
+   ```
+
+**Where outputs go:**
+
+- `prod` profile: cached data, SCAD files, STL files, and the SQLite DB live in Docker-managed named volumes (`cache`, `scad_models`, `stl_models`, `data`). They survive `docker compose down` and are wiped with `docker compose down -v`.
+- `dev` profile: the same directories are bind-mounted from the repo root, so generated artifacts land directly in your working tree.
+
 ## Directory Structure
 
 ```

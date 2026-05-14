@@ -1,0 +1,41 @@
+services:
+  app:
+    profiles: ["prod"]
+    build: .
+    image: crazystockbadges:local
+    env_file: .env
+    environment:
+      LOG_LEVEL: INFO
+      FLASK_DEBUG: "False"
+    ports:
+      - "5000:5000"
+    volumes:
+      - cache:/app/cache
+      - scad_models:/app/scad_models
+      - stl_models:/app/stl_models
+      - data:/app/data
+    restart: unless-stopped
+
+  dev:
+    profiles: ["dev"]
+    build: .
+    image: crazystockbadges:dev
+    env_file: .env
+    environment:
+      FLASK_DEBUG: "True"
+      LOG_LEVEL: DEBUG
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - ./cache:/app/cache
+      - ./scad_models:/app/scad_models
+      - ./stl_models:/app/stl_models
+      - ./data:/app/data
+    restart: "no"
+
+volumes:
+  cache:
+  scad_models:
+  stl_models:
+  data:
